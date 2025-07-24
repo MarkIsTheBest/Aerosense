@@ -29,19 +29,19 @@ La ``Aerosense/Scripts/Webserver/`` se gasesc script-urile pentru Webserver, ace
 -----
 
 ### Echipament utilizat:
-- Ciocan de lipit (380C) | WCD
-- Ciocan de lipid (280C) | Dedeman 
-- Pistol Termic (380C) | WCD 
-- Cositor SWCU 1/17 227C (fara plumb) | Dedeman
-- Sursa programabila 161,2W (5.2A) | WAPTEK
-- Imprimanta 3D Ender 3 V3 KE | Creality
-- \+ Alte scule si unelte gasite acasa
+* Ciocan de lipit (380C) | WCD
+* Ciocan de lipid (280C) | Dedeman 
+* Pistol Termic (380C) | WCD 
+* Cositor SWCU 1/17 227C (fara plumb) | Dedeman
+* Sursa programabila 161,2W (5.2A) | WAPTEK
+* Imprimanta 3D Ender 3 V3 KE | Creality
+* \+ Alte scule si unelte gasite acasa
 
 -----
 
 ### Componentele electronice de baza:
  1. #### Circuit Principal:
-    - Microprocessor | Arduino Nano (USB C)
+    * Microprocessor | Arduino Nano (USB C)
     - Senzor temperatura, presiune si umiditate | BME280
     - Busola/Magnetometru | QMC5883L
     - Senzor analogic de gaz si fum | MQ-7
