@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drone Previous Flight Data</title>
+    
+    <!-- External Stylesheets -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+
+    <!-- External JavaScript Libraries -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-gray-200">
+    <button class="sidebar-toggle" id="sidebarToggle"><i class="fas fa-history"></i></button>
+
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-content">
+            <h2 class="text-xl font-bold mb-2">Saved Flights</h2>
+            <div id="savedFlightsList" class="space-y-2 mb-6"><p class="text-gray-400 italic">No saved flights.</p></div>
+            
+            <h2 class="text-xl font-bold mb-2">Live Data Session</h2>
+            <div id="detectedFlightsList" class="space-y-2">
+            </div>
+        </div>
+    </div>
+
+    <header class="bg-black py-4 shadow-lg">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold">Drone Flight Data Viewer</h1>
+            <div class="flex items-center gap-4 flex-wrap">
+                <div class="flex items-center gap-2">
+                    <span class="text-sm">Heatmap Source</span>
+                    <select id="heatmap-source-select" class="bg-gray-700 text-white text-sm rounded p-1 border border-gray-600">
+                        <option value="weighted" selected>Weighted</option>
+                        <option value="tvoc">TVOC</option>
+                        <option value="eco2">eCO2</option>
+                        <option value="co">CO</option>
+                        <option value="gaslvl">Gas Level</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-2"><span class="text-sm">Heatmap</span><label class="switch"><input type="checkbox" id="heatmap-toggle"><span class="slider"></span></label></div>
+                <div class="flex items-center gap-2"><span class="text-sm">Show Markers</span><label class="switch"><input type="checkbox" id="markers-toggle" checked><span class="slider"></span></label></div>
+                <div class="flex items-center gap-2"><span class="text-sm">Theme</span><label class="switch"><input type="checkbox" id="theme-toggle" checked><span class="slider"></span></label></div>
+                <div class="flex items-center gap-2"><span class="text-sm">Satellite View</span><label class="switch"><input type="checkbox" id="view-toggle" checked><span class="slider"></span></label></div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-6">
+        <div class="w-full">
+            <div class="relative mb-4">
+                <div class="flex">
+                    <input type="text" id="search-input" placeholder="Search by street name or coordinates (lat,lng)" class="w-full px-4 py-2 rounded-l-lg bg-gray-800 text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <button id="search-button" class="px-4 py-2 bg-blue-600 text-white rounded-r-lg hover:bg-blue-700 transition"><i class="fas fa-search"></i></button>
+                </div>
+            </div>
+            <div id="map" class="rounded-lg shadow-xl"></div>
+            
+            <div class="mt-6 bg-gray-800 p-4 rounded-lg shadow-lg">
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-xl font-semibold">Sensor Data Feed</h2>
+                    <span id="sensorDataStatus" class="text-sm text-gray-400">Fetching data...</span>
+                </div>
+                <div class="data-table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th data-sort-key="server_timestamp">TIME</th>
+                                <th data-sort-key="id">ID</th>
+                                <th data-sort-key="tvoc">TVOC (ppb)</th>
+                                <th data-sort-key="gaslvl">GAS (level)</th>
+                                <th data-sort-key="co">CO (ppm)</th>
+                                <th data-sort-key="eco2">CO<sub>2</sub> (ppm)</th>
+                                <th data-sort-key="pressure">PRESSURE (Pa)</th>
+                                <th data-sort-key="humidity">HUMIDITY (%)</th>
+                                <th data-sort-key="temperature">TEMP (°C)</th>
+                                <th data-sort-key="gps_lat">LAT</th>
+                                <th data-sort-key="gps_lng">LNG</th>
+                                <th data-sort-key="altitude">ALT (m)</th>
+                                <th data-sort-key="speed">SPEED (km/h)</th>
+                                <th data-sort-key="direction">DIRECTION</th>
+                                <th data-sort-key="sats">SATS</th>
+                                <th>ACTIONS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sensor-data-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="delete-confirm-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[2000]">
+        <div class="bg-gray-800 p-6 rounded-lg shadow-xl text-center w-11/12 max-w-md">
+            <p class="text-lg mb-4">Are you sure you want to delete this data point?</p>
+            <p class="text-sm text-gray-400 mb-6">This action cannot be undone and will permanently remove the data from the database.</p>
+            <div>
+                <button id="cancel-delete-btn-modal" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-500 mr-4">Cancel</button>
+                <button id="confirm-delete-btn-modal" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-500">Delete</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        const map = L.map('map', { center: [45.7489, 21.2087], zoom: 13, zoomControl: false, preferCanvas: true });
+        const darkTiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; OpenStreetMap &copy; CARTO', maxZoom: 19 });
+        const lightTiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap', maxZoom: 19 });
+        const satelliteTiles = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: 'Tiles &copy; Esri', maxZoom: 19 });
+        let currentTiles = satelliteTiles;
+        satelliteTiles.addTo(map);
+
+        let fullSensorHistory = []; 
+        let savedFlights = [];
+        let currentFlightData = [];
+        const sensorDataMarkersLayer = L.layerGroup().addTo(map); 
+        const selectedFlightPolyline = L.polyline([], { color: '#3b82f6', weight: 4, opacity: 0.9 }).addTo(map);
+        let heatLayer = L.heatLayer([], { 
+            max: 1.0, 
+            gradient: { 0.4: 'blue', 0.65: 'lime', 0.8: 'yellow', 1.0: 'red' } 
+        });
+        
+        const HEATMAP_RADIUS_METERS = 100;
+        let sortState = { key: 'server_timestamp', direction: 'desc' };
+        let heatmapSource = 'weighted';
+        const SAVED_FLIGHTS_KEY = 'droneSavedFlights';
+        
+        let isLiveViewActive = true;
+
+        function updateHeatLayerRadius() {
+            if (!map.hasLayer(heatLayer)) return;
+            const currentZoom = map.getZoom();
+            const centerLat = map.getCenter().lat;
+            const metersPerPixel = 40075016.686 * Math.abs(Math.cos(centerLat * Math.PI / 180)) / Math.pow(2, currentZoom + 8);
+            const newRadius = HEATMAP_RADIUS_METERS / metersPerPixel;
+            const newBlur = newRadius * 0.8;
+            heatLayer.setOptions({ radius: newRadius, blur: newBlur });
+        }
+
+        function getSavedFlightsFromStorage() {
+            const data = localStorage.getItem(SAVED_FLIGHTS_KEY);
+            return data ? JSON.parse(data) : [];
+        }
+
+        function saveFlightsToStorage() {
+            localStorage.setItem(SAVED_FLIGHTS_KEY, JSON.stringify(savedFlights));
+        }
+        
+        function transformData(serverData) {
+            return serverData.map(reading => ({
+                server_timestamp: reading.timestamp,
+                gps_lat: reading.latitude,
+                gps_lng: reading.longitude,
+                eco2: reading.CO2level,
+                tvoc: reading.TVOClevel,
+                co: reading.COlevel,
+                gaslvl: reading.Gaslevel,
+                temperature: reading.temperature,
+                humidity: reading.humidity,
+                pressure: reading.pressure,
+                path: reading.path,
+                id: reading.id,
+                imuAccel: `X:${reading.imuXAccel}, Y:${reading.imuYAccel}, Z:${reading.imuZAccel}`,
+                altitude: reading.altitude,
+                speed: reading.speed,
+                sats: reading.sats,
+                direction: reading.direction
+            }));
+        }
+
+        function renderDetectedFlightsList() {
+            const container = document.getElementById('detectedFlightsList');
+            if (fullSensorHistory.length === 0) {
+                container.innerHTML = '<p class="text-gray-400 italic">No live data.</p>';
+                return;
+            }
+            container.innerHTML = `
+                <div id="live-data-item" class="flight-item">
+                    <div class="flight-item-header">
+                        <div>
+                            <div class="font-bold">Current Session</div>
+                            <div class="text-sm text-gray-300">${fullSensorHistory.length} points</div>
+                        </div>
+                        <div class="flight-item-actions">
+                            <button id="save-current-session-btn" title="Save Session"><i class="fas fa-save"></i></button>
+                        </div>
+                    </div>
+                     <div id="save-session-form" class="flight-save-form hidden">
+                        <input type="text" value="Flight @ ${new Date().toLocaleString()}" class="save-name-input">
+                        <div class="flex justify-end gap-2">
+                            <button class="cancel-save-btn">Cancel</button>
+                            <button class="confirm-save-btn">Save</button>
+                        </div>
+                    </div>
+                </div>`;
+            if (isLiveViewActive) {
+                container.querySelector('.flight-item').classList.add('selected');
+            }
+        }
+        
+        function renderSavedFlightsList() {
+            const container = document.getElementById('savedFlightsList');
+            container.innerHTML = savedFlights.length === 0 ? '<p class="text-gray-400 italic">No saved flights.</p>' : '';
+            savedFlights.forEach((flight, index) => {
+                const pathElement = document.createElement('div');
+                pathElement.className = 'flight-item';
+                pathElement.dataset.flightIndex = index;
+                pathElement.innerHTML = `
+                    <div class="flight-item-header">
+                        <div class="flight-name-container">
+                            <span class="font-bold flight-name-text">${flight.name}</span>
+                            <input type="text" class="flight-name-input hidden" value="${flight.name}">
+                        </div>
+                        <div class="flight-item-actions">
+                            <div class="initial-actions flex gap-2">
+                                <button class="edit-flight-btn" title="Edit Name"><i class="fas fa-pencil-alt"></i></button>
+                                <button class="delete-flight-btn" title="Delete Flight"><i class="fas fa-trash"></i></button>
+                            </div>
+                            <div class="confirm-actions hidden flex items-center gap-2">
+                                <span class="text-xs text-red-400">Sure?</span>
+                                <button class="confirm-delete-btn text-green-500" title="Confirm Delete"><i class="fas fa-check"></i></button>
+                                <button class="cancel-delete-btn text-red-500" title="Cancel"><i class="fas fa-times"></i></button>
+                            </div>
+                        </div>
+                    </div>`;
+                container.appendChild(pathElement);
+            });
+        }
+
+        function toggleSaveForm(flightItem, show) { flightItem.querySelector('.flight-save-form').classList.toggle('hidden', !show); }
+        
+        function confirmSaveFlight(flightItem) {
+            const input = flightItem.querySelector('.save-name-input');
+            const flightName = input.value.trim();
+            if (flightName) {
+                const flightDataToSave = [...fullSensorHistory];
+                savedFlights.unshift({ name: flightName, data: flightDataToSave });
+                saveFlightsToStorage();
+                renderSavedFlightsList();
+                toggleSaveForm(flightItem, false);
+            }
+        }
+
+        function toggleEditFlightName(flightItem) {
+            const textEl = flightItem.querySelector('.flight-name-text');
+            const inputEl = flightItem.querySelector('.flight-name-input');
+            textEl.classList.toggle('hidden');
+            inputEl.classList.toggle('hidden');
+            if (!inputEl.classList.contains('hidden')) { inputEl.focus(); inputEl.select(); }
+        }
+
+        function saveFlightName(flightItem) {
+            const inputEl = flightItem.querySelector('.flight-name-input');
+            if (inputEl.classList.contains('hidden')) return;
+            const newName = inputEl.value.trim();
+            if (newName) {
+                const flightIndex = parseInt(flightItem.dataset.flightIndex);
+                savedFlights[flightIndex].name = newName;
+                saveFlightsToStorage();
+                renderSavedFlightsList();
+            }
+        }
+        
+        function toggleDeleteConfirm(flightItem, showConfirm) {
+            flightItem.querySelector('.initial-actions').classList.toggle('hidden', showConfirm);
+            flightItem.querySelector('.confirm-actions').classList.toggle('hidden', !showConfirm);
+        }
+
+        function displayFlight(flightData) {
+            // *** MODIFIED: Determine if the view is live based on the data source ***
+            isLiveViewActive = (flightData === fullSensorHistory);
+            currentFlightData = flightData;
+            sortAndRenderTable();
+            updateHeatmap(currentFlightData);
+            updateHeatLayerRadius();
+            const flightPathCoords = currentFlightData
+                .map(r => [parseFloat(r.gps_lat), parseFloat(r.gps_lng)])
+                .filter(coords => isValidLatLng(coords[0], coords[1]));
+            selectedFlightPolyline.setLatLngs(flightPathCoords);
+            if (flightPathCoords.length > 0) {
+                map.fitBounds(selectedFlightPolyline.getBounds().pad(0.1));
+            }
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('sensorDataStatus').textContent = `Displaying ${currentFlightData.length} readings.`;
+        }
+        
+        function renderMarkers(data) {
+            sensorDataMarkersLayer.clearLayers();
+            data.forEach((reading, index) => {
+                try {
+                    const lat = parseFloat(reading.gps_lat);
+                    const lng = parseFloat(reading.gps_lng);
+                    if (isValidLatLng(lat, lng)) {
+                        const markerCounter = index + 1;
+                        const iconHtml = `<div class="sensor-data-marker-icon" title="Waypoint ${markerCounter}">${markerCounter}</div>`;
+                        const marker = L.marker([lat, lng], {
+                            icon: L.divIcon({ className: 'sensor-data-icon', html: iconHtml, iconSize: [28, 28], iconAnchor: [14, 14] })
+                        }).addTo(sensorDataMarkersLayer);
+                        
+                        let popupContent = `<div class="font-mono text-xs"><strong>Waypoint #${markerCounter} Data:</strong><br>`;
+                        Object.keys(reading).forEach(key => {
+                            popupContent += `<b>${key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}:</b> ${reading[key] ?? 'N/A'}<br>`;
+                        });
+                        popupContent += `</div>`;
+                        marker.bindPopup(popupContent);
+                    }
+                } catch (error) {
+                    console.error(`Failed to render marker for point ${index}:`, reading, error);
+                }
+            });
+        }
+
+        function renderTable(data) {
+            const tableBody = document.getElementById('sensor-data-table-body');
+            tableBody.innerHTML = ''; 
+            if (!data || data.length === 0) {
+                const row = tableBody.insertRow();
+                const cell = row.insertCell();
+                cell.colSpan = 16;
+                cell.textContent = "No sensor data for this flight.";
+                cell.style.textAlign = "center";
+                return;
+            }
+            data.forEach(reading => {
+                const row = tableBody.insertRow();
+                row.dataset.id = reading.id;
+                row.dataset.lat = reading.gps_lat;
+                row.dataset.lng = reading.gps_lng;
+
+                const timeCell = row.insertCell();
+                timeCell.textContent = new Date(reading.server_timestamp).toLocaleString() || 'N/A';
+                timeCell.className = 'time-cell';
+
+                row.insertCell().textContent = reading.id ?? 'N/A';
+                row.insertCell().textContent = reading.tvoc ?? 'N/A';
+                row.insertCell().textContent = reading.gaslvl ?? 'N/A';
+                row.insertCell().textContent = reading.co ?? 'N/A';
+                row.insertCell().textContent = reading.eco2 ?? 'N/A';
+                row.insertCell().textContent = reading.pressure ?? 'N/A';
+                row.insertCell().textContent = reading.humidity ?? 'N/A';
+                row.insertCell().textContent = reading.temperature ?? 'N/A';
+                row.insertCell().textContent = reading.gps_lat ?? 'N/A';
+                row.insertCell().textContent = reading.gps_lng ?? 'N/A';
+                row.insertCell().textContent = reading.altitude ?? 'N/A';
+                row.insertCell().textContent = reading.speed ?? 'N/A';
+                row.insertCell().textContent = reading.direction ?? 'N/A';
+                row.insertCell().textContent = reading.sats ?? 'N/A';
+                
+                const actionCell = row.insertCell();
+                actionCell.innerHTML = `<button class="delete-row-btn p-1" data-id="${reading.id}" title="Delete this entry">
+                                            <i class="fas fa-trash-alt text-red-500 hover:text-red-400"></i>
+                                        </button>`;
+            });
+        }
+
+        function sortAndRenderTable() {
+            if (!currentFlightData) return;
+            const sortedData = [...currentFlightData].sort((a, b) => {
+                const valA = a[sortState.key];
+                const valB = b[sortState.key];
+                let comparison = 0;
+                if (sortState.key === 'server_timestamp') {
+                    comparison = new Date(valA) - new Date(valB);
+                } else if (['id', 'gps_lat', 'gps_lng', 'altitude', 'speed', 'sats', 'tvoc', 'eco2', 'co', 'gaslvl', 'temperature', 'humidity', 'pressure', 'path'].includes(sortState.key)) {
+                    const numA = parseFloat(valA);
+                    const numB = parseFloat(valB);
+                    if (isNaN(numA) && isNaN(numB)) comparison = 0;
+                    else if (isNaN(numA)) comparison = 1;
+                    else if (isNaN(numB)) comparison = -1;
+                    else comparison = numA - numB;
+                } else {
+                    comparison = String(valA).localeCompare(String(valB));
+                }
+                return sortState.direction === 'asc' ? comparison : -comparison;
+            });
+            renderTable(sortedData);
+            renderMarkers(sortedData);
+            updateSortIcons();
+        }
+
+        function updateSortIcons() {
+            document.querySelectorAll('.data-table th').forEach(th => {
+                const icon = th.querySelector('.sort-icon');
+                if (icon) {
+                    icon.classList.remove('fa-sort', 'fa-sort-up', 'fa-sort-down', 'active');
+                    const key = th.dataset.sortKey;
+                    if (key === sortState.key) {
+                        icon.classList.add('active');
+                        icon.classList.add(sortState.direction === 'asc' ? 'fa-sort-up' : 'fa-sort-down');
+                    } else {
+                        icon.classList.add('fa-sort');
+                    }
+                }
+            });
+        }
+
+        function calculateWPI(reading) {
+            const thresholds = {
+                tvoc:   { low: 250, high: 2200, weight: 0.3 },
+                eco2:   { low: 400, high: 2000, weight: 0.2 },
+                co:     { low: 4,   high: 9,    weight: 0.4 },
+                gaslvl: { low: 0,   high: 1000, weight: 0.1 }
+            };
+            let totalScore = 0;
+            for (const key in thresholds) {
+                const value = parseFloat(reading[key]);
+                if (isNaN(value)) continue;
+                const { low, high, weight } = thresholds[key];
+                let normalized = (value - low) / (high - low);
+                normalized = Math.max(0, Math.min(1, normalized));
+                totalScore += normalized * weight;
+            }
+            return totalScore;
+        }
+
+        function updateHeatmap(data) {
+            if (!data || data.length === 0) { heatLayer.setLatLngs([]); return; }
+            const processedData = data.map(r => {
+                let value;
+                if (heatmapSource === 'weighted') { value = calculateWPI(r); } 
+                else { value = parseFloat(r[heatmapSource]); }
+                return { lat: parseFloat(r.gps_lat), lng: parseFloat(r.gps_lng), value: value };
+            }).filter(p => isValidLatLng(p.lat, p.lng) && !isNaN(p.value));
+
+            if (processedData.length === 0) { heatLayer.setLatLngs([]); return; }
+            const values = processedData.map(p => p.value);
+            const minVal = Math.min(...values);
+            const maxVal = Math.max(...values);
+            const range = maxVal - minVal;
+            const heatData = processedData.map(p => {
+                const intensity = range > 0 ? (p.value - minVal) / range : 0.5;
+                return [p.lat, p.lng, intensity];
+            });
+            heatLayer.setLatLngs(heatData);
+        }
+
+        async function fetchInitialData() {
+            const statusEl = document.getElementById('sensorDataStatus');
+            try {
+                statusEl.textContent = 'Fetching data from server...';
+                const response = await fetch('/api/data');
+                if (!response.ok) throw new Error(`Server responded with ${response.status}`);
+                const serverData = await response.json();
+                
+                fullSensorHistory = transformData(serverData);
+                savedFlights = getSavedFlightsFromStorage();
+                
+                renderDetectedFlightsList();
+                renderSavedFlightsList();
+                displayFlight(fullSensorHistory);
+                
+            } catch (error) {
+                console.error('Failed to fetch data:', error);
+                statusEl.textContent = 'Error fetching data.';
+                renderDetectedFlightsList();
+                renderSavedFlightsList();
+                sortAndRenderTable();
+            }
+        }
+        async function fetchUpdates() {
+            try {
+                const response = await fetch('/api/data');
+                if (!response.ok) {
+                    console.error(`Server responded with ${response.status}`);
+                    return;
+                }
+                const serverData = await response.json();
+                fullSensorHistory = transformData(serverData);
+
+                renderDetectedFlightsList();
+
+                if (isLiveViewActive) {
+                    displayFlight(fullSensorHistory);
+                }
+            } catch (error) {
+                console.error('Failed to fetch updates:', error);
+            }
+        }
+
+        function handleSearch() {
+            const input = document.getElementById('search-input').value.trim();
+            if (!input) return;
+            if (/^-?\d+\.?\d*,\s*-?\d+\.?\d*$/.test(input)) {
+                const [lat, lng] = input.split(',').map(Number);
+                if (isValidLatLng(lat, lng)) { map.setView(L.latLng(lat, lng), 15); return; }
+            }
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(input)}`)
+                .then(r => r.json()).then(d => { if (d.length > 0) map.setView(L.latLng(d[0].lat, d[0].lon), 15); else alert('Location not found'); })
+                .catch(e => { console.error('Search error:', e); alert('Search failed'); });
+        }
+
+        function isValidLatLng(lat, lng) { return lat != null && lng != null && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180; }
+        
+        function toggleTheme(isDark) {
+            document.body.classList.toggle('light', !isDark); document.body.classList.toggle('bg-gray-900', isDark);
+            document.body.classList.toggle('text-gray-200', isDark); document.body.classList.toggle('bg-gray-100', !isDark);
+            document.body.classList.toggle('text-gray-800', !isDark); document.querySelector('header').classList.toggle('bg-black', isDark);
+            document.querySelector('header').classList.toggle('bg-white', !isDark); const searchInput = document.getElementById('search-input');
+            searchInput.classList.toggle('bg-gray-800', isDark); searchInput.classList.toggle('text-white', isDark);
+            searchInput.classList.toggle('border-gray-700', isDark); searchInput.classList.toggle('bg-white', !isDark);
+            searchInput.classList.toggle('text-gray-800', !isDark); searchInput.classList.toggle('border-gray-300', !isDark);
+            document.querySelector('.data-table-wrapper').parentElement.classList.toggle('bg-gray-800', isDark);
+            document.querySelector('.data-table-wrapper').parentElement.classList.toggle('bg-gray-100', !isDark);
+            if (currentTiles !== satelliteTiles) {  map.removeLayer(currentTiles); currentTiles = isDark ? darkTiles : lightTiles; currentTiles.addTo(map); }
+        }
+
+        function toggleView(isSatellite) {
+            map.removeLayer(currentTiles);
+            if (isSatellite) { currentTiles = satelliteTiles; } 
+            else { currentTiles = document.getElementById('theme-toggle').checked ? darkTiles : lightTiles; }
+            currentTiles.addTo(map);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            toggleTheme(true); toggleView(true);  
+            document.getElementById('theme-toggle').checked = true;
+            document.getElementById('view-toggle').checked = true;
+            document.getElementById('markers-toggle').checked = true;
+            
+            fetchInitialData();
+
+            setInterval(fetchUpdates, 5000);
+
+            map.on('zoomend', updateHeatLayerRadius);
+            document.getElementById('sidebarToggle').addEventListener('click', () => document.getElementById('sidebar').classList.toggle('open'));
+            document.getElementById('search-button').addEventListener('click', handleSearch);
+            document.getElementById('search-input').addEventListener('keypress', e => { if (e.key === 'Enter') handleSearch(); });
+            document.getElementById('theme-toggle').addEventListener('change', function() { toggleTheme(this.checked); });
+            document.getElementById('view-toggle').addEventListener('change', function() { toggleView(this.checked); });
+            
+            document.getElementById('heatmap-toggle').addEventListener('change', function() { 
+                if (map.hasLayer(heatLayer)) {
+                    map.removeLayer(heatLayer);
+                } else {
+                    map.addLayer(heatLayer);
+                    updateHeatLayerRadius(); 
+                }
+            });
+
+            document.getElementById('markers-toggle').addEventListener('change', function() { map.hasLayer(sensorDataMarkersLayer) ? map.removeLayer(sensorDataMarkersLayer) : map.addLayer(sensorDataMarkersLayer); });
+            document.getElementById('heatmap-source-select').addEventListener('change', function(e) { heatmapSource = e.target.value; updateHeatmap(currentFlightData); });
+
+            document.querySelectorAll('.data-table th').forEach(th => {
+                th.addEventListener('click', () => {
+                    const key = th.dataset.sortKey;
+                    if (!key) return;
+                    if (sortState.key === key) { sortState.direction = sortState.direction === 'asc' ? 'desc' : 'asc'; } 
+                    else { sortState.key = key; sortState.direction = 'asc'; }
+                    sortAndRenderTable();
+                });
+            });
+
+            const deleteModal = document.getElementById('delete-confirm-modal');
+            const confirmDeleteBtn = document.getElementById('confirm-delete-btn-modal');
+            const cancelDeleteBtn = document.getElementById('cancel-delete-btn-modal');
+            let pointIdToDelete = null;
+
+            document.getElementById('sensor-data-table-body').addEventListener('click', function(e) {
+                const deleteButton = e.target.closest('.delete-row-btn');
+                if (deleteButton) {
+                    pointIdToDelete = parseInt(deleteButton.dataset.id);
+                    deleteModal.classList.remove('hidden');
+                }
+            });
+
+            cancelDeleteBtn.addEventListener('click', () => {
+                deleteModal.classList.add('hidden');
+                pointIdToDelete = null;
+            });
+
+            confirmDeleteBtn.addEventListener('click', async () => {
+                if (pointIdToDelete === null) return;
+                try {
+                    const response = await fetch(`/api/data/${pointIdToDelete}`, { method: 'DELETE' });
+                    if (!response.ok) throw new Error('Server responded with an error.');
+                    fullSensorHistory = fullSensorHistory.filter(p => p.id !== pointIdToDelete);
+                    savedFlights.forEach(flight => {
+                        flight.data = flight.data.filter(p => p.id !== pointIdToDelete);
+                    });
+                    saveFlightsToStorage();
+                    displayFlight(fullSensorHistory);
+                    renderSavedFlightsList();
+                    renderDetectedFlightsList();
+                } catch (error) {
+                    console.error('Failed to delete data point:', error);
+                    alert('Error: Could not delete data point.');
+                } finally {
+                    deleteModal.classList.add('hidden');
+                    pointIdToDelete = null;
+                }
+            });
+
+            const detectedFlightsContainer = document.getElementById('detectedFlightsList');
+            detectedFlightsContainer.addEventListener('click', (e) => {
+                const flightItem = e.target.closest('.flight-item');
+                if (!flightItem) return;
+                if (e.target.closest('#save-current-session-btn')) {
+                    toggleSaveForm(flightItem, true);
+                } else if (e.target.closest('.confirm-save-btn')) {
+                    confirmSaveFlight(flightItem);
+                } else if (e.target.closest('.cancel-save-btn')) {
+                    toggleSaveForm(flightItem, false);
+                } else if (e.target.closest('.flight-item-header')) {
+                    displayFlight(fullSensorHistory);
+                    document.querySelectorAll('.flight-item').forEach(el => el.classList.remove('selected'));
+                    flightItem.classList.add('selected');
+                }
+            });
+
+            const savedFlightsContainer = document.getElementById('savedFlightsList');
+            savedFlightsContainer.addEventListener('click', (e) => {
+                const flightItem = e.target.closest('.flight-item');
+                if (!flightItem) return;
+                const flightIndex = parseInt(flightItem.dataset.flightIndex);
+                if (e.target.closest('.edit-flight-btn')) {
+                    toggleEditFlightName(flightItem);
+                } else if (e.target.closest('.delete-flight-btn')) {
+                    toggleDeleteConfirm(flightItem, true);
+                } else if (e.target.closest('.confirm-delete-btn')) {
+                    savedFlights.splice(flightIndex, 1);
+                    saveFlightsToStorage();
+                    renderSavedFlightsList();
+                } else if (e.target.closest('.cancel-delete-btn')) {
+                    toggleDeleteConfirm(flightItem, false);
+                } else if (e.target.closest('.flight-item-header')) {
+                    displayFlight(savedFlights[flightIndex].data);
+                    document.querySelectorAll('.flight-item').forEach(el => el.classList.remove('selected'));
+                    flightItem.classList.add('selected');
+                }
+            });
+            
+            savedFlightsContainer.addEventListener('focusout', (e) => {
+                if (e.target.matches('.flight-name-input')) { saveFlightName(e.target.closest('.flight-item')); }
+            });
+            savedFlightsContainer.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && e.target.matches('.flight-name-input')) { saveFlightName(e.target.closest('.flight-item')); }
+            });
+        });
+    </script>
+</body>
+</html>
