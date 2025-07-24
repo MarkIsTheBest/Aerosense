@@ -53,7 +53,6 @@ La ``Aerosense/Scripts/Webserver/`` se gasesc script-urile pentru Webserver, ace
     - Modul MicroSD Card (+ MicroSDHD Card 32GB)
 <img width="1008" height="756" alt="image" src="https://github.com/user-attachments/assets/4b457898-f970-4cd8-9a83-864a2e5c1666" />
 
-
 2. #### Circuit Alimentare:
    - Acumulator Li-Ion 3.7V (MAX 4.2) 3350mAh | Samsung INR18650-25E
    - Panou Solar 5V 1W | YX-107X61
@@ -61,6 +60,7 @@ La ``Aerosense/Scripts/Webserver/`` se gasesc script-urile pentru Webserver, ace
    - Voltmetru (incarcatura acumulator)
    - Intrerupator (opriria circuitului)
    - Ridicator de tensiune (3.7V -> 5V) 5A | XL6019
-
-<img width="2865" height="1545" alt="image" src="https://github.com/user-attachments/assets/8684c576-5ffc-4854-824a-522b729cd7b4" />
+  
+     
+<img width="756" height="1008" alt="image" src="https://github.com/user-attachments/assets/aeeb0074-df9d-4c69-9ec2-5033c10169de" />
 
