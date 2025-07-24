@@ -62,4 +62,5 @@ La ``Aerosense/Scripts/Webserver/`` se gasesc script-urile pentru Webserver, ace
    - Intrerupator (opriria circuitului)
    - Ridicator de tensiune (3.7V -> 5V) 5A | XL6019
 
+<img width="2865" height="1545" alt="image" src="https://github.com/user-attachments/assets/8684c576-5ffc-4854-824a-522b729cd7b4" />
 
