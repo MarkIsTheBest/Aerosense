@@ -1,14 +1,32 @@
 # Aerosense
-#### Autonomous Mobile Weather Station for sampling weather data anywhere and at anytime.
+#### Statie Meteo Mobila Autonoma, pentru culegerea datelor meteorologice, oricand si oriune.
+
+-----
+
+### Ierarhie pagina Github:
+La ``Aerosense/Scripts/Drone.ino`` se gaseste codul Microcontroller-ului, acesta gestioneaza atat senzorii,
+ cat si trimiterea lor pe webserver prin intermediului unei cartele SIM, iar simultan datele inregistrate sunt salvate
+ pe o cartela MicroSD.
+
+La ``Aerosense/Scripts/Webserver/`` se gasesc script-urile pentru Webserver, acestea includ:
+- ``server.js`` (functionalitatea principala a server-ului prin intermediul Node.js)
+- ``index.html`` (codul de baza a front-end-ului)
+- ``style.css`` (stilistica front-end)
+
+-----
 
 ### Software utilizat:
-- Arduino IDE
-- Visual Studio Code
-- Fusion360
-- CrealityPrint
-- Kicad
-- Gemini Pro AI
-- Canva
+| Software Name | Download Link |
+|---|---|
+| `Arduino IDE` | [`https://www.arduino.cc/en/software/`](https://www.arduino.cc/en/software/) |
+| `Visual Studio Code` | [`https://code.visualstudio.com/`](https://code.visualstudio.com/) |
+| `Fusion360` | [`https://www.autodesk.com/products/fusion-360/personal`](https://www.autodesk.com/products/fusion-360/personal) |
+| `Creality Print` | [`https://www.creality.com/pages/download-software`](https://www.creality.com/pages/download-software) |
+| `KiCad` | [`https://www.kicad.org/download/windows/`](https://www.kicad.org/download/windows/) |
+| `Gemini Pro AI` | [`https://gemini.google.com/`](https://gemini.google.com/) |
+| `Canva` | [`https://www.canva.com/`](https://www.canva.com/) |
+
+-----
 
 ### Echipament utilizat:
 - Ciocan de lipit (380C) | WCD
@@ -18,6 +36,8 @@
 - Sursa programabila 161,2W (5.2A) | WAPTEK
 - Imprimanta 3D Ender 3 V3 KE | Creality
 - \+ Alte scule si unelte gasite acasa
+
+-----
 
 ### Componentele electronice de baza:
  1. #### Circuit Principal:
@@ -31,6 +51,8 @@
     - Senzor calitatea aerului | SGP30
     - Modul GPS (+ Antena) | NEO6MV3
     - Modul MicroSD Card (+ MicroSDHD Card 32GB)
+<img width="1008" height="756" alt="image" src="https://github.com/user-attachments/assets/4b457898-f970-4cd8-9a83-864a2e5c1666" />
+
 
 2. #### Circuit Alimentare:
    - Acumulator Li-Ion 3.7V (MAX 4.2) 3350mAh | Samsung INR18650-25E
@@ -40,4 +62,4 @@
    - Intrerupator (opriria circuitului)
    - Ridicator de tensiune (3.7V -> 5V) 5A | XL6019
 
-  
+
