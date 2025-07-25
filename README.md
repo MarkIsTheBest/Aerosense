@@ -1,5 +1,6 @@
-# Aerosense
-#### Statie Meteo Mobila Autonoma, pentru culegerea datelor meteorologice, oricand si oriune.
+<img width="733" height="104" alt="image" src="https://github.com/user-attachments/assets/bdb37456-3c90-47d7-bd19-0e259574094c" />
+
+#### *Statie Meteo Mobila Autonoma, pentru culegerea datelor meteorologice, oricand si oriune.*
 
 ---
 
@@ -78,9 +79,13 @@ La ``Aerosense/Scripts/Webserver/`` se gasesc script-urile pentru Webserver, ace
     * ``Wire.h``
     * ``sSense-BMx280I2C.h``
     * ``Adafruit_SGP30.h``
-    
- 3. #### Webserver:
-    * ``mysql2``
+      
+ 2. #### Webserver:
+    * ``http``
+    * ``fs``
+    * ``path``
+    * ``mysql2 + promise``
+    * ``leaflet(API)``
 
 -----
 
