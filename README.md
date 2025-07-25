@@ -65,6 +65,24 @@ La ``Aerosense/Scripts/Webserver/`` se gasesc script-urile pentru Webserver, ace
    - Intrerupator (opriria circuitului)
    - Ridicator de tensiune (3.7V -> 5V) 5A | XL6019
 
+-----
+
+### Librarii Folosite:
+
+ 1. #### Arduino:
+    * ``SoftwareSerial.h``
+    * ``QMC5883LCompass.h``
+    * ``TinyGPSPlus.h``
+    * ``I2Cdev.h``
+    * ``MPU6050.h``
+    * ``Wire.h``
+    * ``sSense-BMx280I2C.h``
+    * ``Adafruit_SGP30.h``
+    
+ 3. #### Webserver:
+    * ``mysql2``
+
+-----
 
 ## Galerie Foto:
 
