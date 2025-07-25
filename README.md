@@ -3,6 +3,12 @@
 
 -----
 
+> [!NOTE]
+> Acest ``README.md`` este strict dedicat partii technice al acestui proiect, pentru detalii mai generale, te rog visualizeaza prezentarea powerpoint, sau daca ai mai mult timp de citit, poti visualiza chiar si documentatia in intregime!
+
+
+-----
+
 ### Ierarhie pagina Github:
 La ``Aerosense/Scripts/Drone.ino`` se gaseste codul Microcontroller-ului, acesta gestioneaza atat senzorii,
  cat si trimiterea lor pe webserver prin intermediului unei cartele SIM, iar simultan datele inregistrate sunt salvate
@@ -51,7 +57,6 @@ La ``Aerosense/Scripts/Webserver/`` se gasesc script-urile pentru Webserver, ace
     - Senzor calitatea aerului | SGP30
     - Modul GPS (+ Antena) | NEO6MV3
     - Modul MicroSD Card (+ MicroSDHD Card 32GB)
-<img width="1008" height="756" alt="image" src="https://github.com/user-attachments/assets/4b457898-f970-4cd8-9a83-864a2e5c1666" />
 
 2. #### Circuit Alimentare:
    - Acumulator Li-Ion 3.7V (MAX 4.2) 3350mAh | Samsung INR18650-25E
@@ -60,7 +65,17 @@ La ``Aerosense/Scripts/Webserver/`` se gasesc script-urile pentru Webserver, ace
    - Voltmetru (incarcatura acumulator)
    - Intrerupator (opriria circuitului)
    - Ridicator de tensiune (3.7V -> 5V) 5A | XL6019
-  
-     
+
+
+## Galerie Foto:
+
+### Placa de baza a sistemului:
+<img width="1008" height="756" alt="image" src="https://github.com/user-attachments/assets/4b457898-f970-4cd8-9a83-864a2e5c1666" />
+
+### Sistemul de alimentare a placii:
 <img width="756" height="1008" alt="image" src="https://github.com/user-attachments/assets/aeeb0074-df9d-4c69-9ec2-5033c10169de" />
+
+### Schematica completa a sistemului din KiCad:
+<img width="2339" height="1654" alt="image" src="https://github.com/user-attachments/assets/c6c07642-b449-4d43-a4ff-e8271ed79cd2" />
+
 
