@@ -98,6 +98,6 @@ La ``Aerosense/Scripts/Webserver/`` se gasesc script-urile pentru Webserver, ace
 <img width="756" height="1008" alt="image" src="https://github.com/user-attachments/assets/aeeb0074-df9d-4c69-9ec2-5033c10169de" />
 
 ### Schematica completa a sistemului din KiCad:
-<img width="2339" height="1654" alt="image" src="https://github.com/user-attachments/assets/c6c07642-b449-4d43-a4ff-e8271ed79cd2" />
+<img width="2114" height="1067" alt="image" src="https://github.com/user-attachments/assets/b3906e2e-3b9c-443a-b132-03b388557b10" />
 
 
