@@ -1,4 +1,4 @@
-<img width="733" height="104" alt="image" src="https://github.com/user-attachments/assets/bdb37456-3c90-47d7-bd19-0e259574094c" />
+<img width="712" height="94" alt="image" src="https://github.com/user-attachments/assets/bd13d183-a637-44bc-bebc-6ede57f56171" />
 
 #### *Statie Meteo Mobila Autonoma, pentru culegerea datelor meteorologice, oricand si oriune.*
 
