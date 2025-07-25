@@ -1,13 +1,9 @@
 # Aerosense
 #### Statie Meteo Mobila Autonoma, pentru culegerea datelor meteorologice, oricand si oriune.
 
------
-
 > [!NOTE]
 > Acest ``README.md`` este strict dedicat partii technice al acestui proiect, pentru detalii mai generale, te rog visualizeaza prezentarea powerpoint, sau daca ai mai mult timp de citit, poti visualiza chiar si documentatia in intregime!
 
-
------
 
 ### Ierarhie pagina Github:
 La ``Aerosense/Scripts/Drone.ino`` se gaseste codul Microcontroller-ului, acesta gestioneaza atat senzorii,
