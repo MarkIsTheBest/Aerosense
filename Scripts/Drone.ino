@@ -9,7 +9,7 @@
 #include <Adafruit_SGP30.h>
 
 const char APN[] = "net";
-const char SERVER_IP[] = "karlmarx.home.ro";
+const char SERVER_IP[] = "62.231.112.115";
 const char SERVER_PORT[] = "25565";
 
 const int SIM800_RX_PIN = 4;
@@ -43,7 +43,7 @@ float temperature, humidity, pressure;
 uint16_t tvocLevel, co2Level;
 
 unsigned long lastSendTime = 0;
-const long sendInterval = 5000;
+const long sendInterval = 500;
 
 void setup() {
     Serial.begin(9600);
