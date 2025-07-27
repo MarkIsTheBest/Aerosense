@@ -19,31 +19,21 @@ La ``Aerosense/Scripts/Webserver/`` se gasesc script-urile pentru Webserver, ace
 - ``index.html`` (codul de baza a front-end-ului)
 - ``style.css`` (stilistica front-end)
 
------
+La ``Aerosense/3DModels/`` se gaseste modelul 3d al cutiei printate, care faciliteaza locuinta intregului sistem. Acest model se gaseste in mai multe format-uri pentru a usura uzul acestora. (Fusion360)
 
-### Software utilizat:
-| Software Name | Download Link |
-|---|---|
-| `Arduino IDE` | [`https://www.arduino.cc/en/software/`](https://www.arduino.cc/en/software/) |
-| `Visual Studio Code` | [`https://code.visualstudio.com/`](https://code.visualstudio.com/) |
-| `Fusion360` | [`https://www.autodesk.com/products/fusion-360/personal`](https://www.autodesk.com/products/fusion-360/personal) |
-| `Creality Print` | [`https://www.creality.com/pages/download-software`](https://www.creality.com/pages/download-software) |
-| `KiCad` | [`https://www.kicad.org/download/windows/`](https://www.kicad.org/download/windows/) |
-| `Gemini Pro AI` | [`https://gemini.google.com/`](https://gemini.google.com/) |
-| `Canva` | [`https://www.canva.com/`](https://www.canva.com/) |
+La ``Aerosense/Datasheets/`` se gasesc documente specifice a diverselor parti furnizate extern al sistemului nostru, cum ar fi de exemplu: baterie ce noi o folosim.
 
------
+La ``Aerosense/Documentation/`` se gaseste atat documentatia cat si o prezentare powerpoint, pentru a usura intelegerea proiectului/sistemului, fiind scrisa la un mod mai general decat acest ``README.md`` care este strict technic:
+- ``Documentation.pdf`` (asa numita documentatie de 12 pagini)
+- ``Presentation.pptx`` (prezentare powerpoint generala)
 
-### Echipament utilizat:
-* Ciocan de lipit (380C) | WCD
-* Ciocan de lipid (280C) | Dedeman 
-* Pistol Termic (380C) | WCD 
-* Cositor SWCU 1/17 227C (fara plumb) | Dedeman
-* Sursa programabila 161,2W (5.2A) | WAPTEK
-* Imprimanta 3D Ender 3 V3 KE | Creality
-* \+ Alte scule si unelte gasite acasa
+La ``Aerosense/Photos/`` se gasesc diverse poze, capturand infatisarea sistemului, atat pe dinafara cat si pe dinauntru. Aceste poze va pot ajuta in vizualizaera sistemului.
+
+La ``Aerosense/Schematics/`` se gaseste schematica circuitului electric facut in KiCad. Aceasta schematica nu face posibila doar visualizarea conexiuniilor electrice intre diferitii senzori, ci si a sistemului de alimentare. Urmarind aceasta schematica, proiectul poate fii facut mult mai mic prin intermediul, unui PCB presonalizat.
 
 -----
+
+# Hardware:
 
 ### Componentele electronice de baza:
  1. #### Circuit Principal:
@@ -65,27 +55,49 @@ La ``Aerosense/Scripts/Webserver/`` se gasesc script-urile pentru Webserver, ace
    - Voltmetru (incarcatura acumulator)
    - Intrerupator (opriria circuitului)
    - Ridicator de tensiune (3.7V -> 5V) 5A | XL6019
+  
+### Echipament utilizat:
+* Ciocan de lipit (380C) | WCD
+* Ciocan de lipid (280C) | Dedeman 
+* Pistol Termic (380C) | WCD 
+* Cositor SWCU 1/17 227C (fara plumb) | Dedeman
+* Sursa programabila 161,2W (5.2A) | WAPTEK
+* Imprimanta 3D Ender 3 V3 KE | Creality
+* \+ Alte scule si unelte gasite acasa
 
 -----
+
+# Software:
 
 ### Librarii Folosite:
 
  1. #### Arduino:
-    * ``SoftwareSerial.h``
-    * ``QMC5883LCompass.h``
-    * ``TinyGPSPlus.h``
-    * ``I2Cdev.h``
-    * ``MPU6050.h``
-    * ``Wire.h``
-    * ``sSense-BMx280I2C.h``
-    * ``Adafruit_SGP30.h``
+    * ``SoftwareSerial.h`` (pentru a putea folosii oricare pini ca si TX/RX)
+    * ``QMC5883LCompass.h`` (pentru gestionarea usoara si eficienta a busolei)
+    * ``TinyGPSPlus.h`` (pentru interpretarea datelor primite de la sateliti)
+    * ``I2Cdev.h`` (pentru conectarea si usurinta uzual a protocolului I2C)
+    * ``MPU6050.h`` (pentru calibrarea si utilizarea eficienta a IMU-ului)
+    * ``Wire.h`` (pentru a putea folosi protocolul de transmitere I2C)
+    * ``sSense-BMx280I2C.h`` (pentru a banaliza folosirea senzorului ambiental)
+    * ``Adafruit_SGP30.h`` (pentru a banaliza folosirea senzorului de calitate a aerului)
       
  2. #### Webserver:
-    * ``http``
-    * ``fs``
-    * ``path``
-    * ``mysql2 + promise``
-    * ``leaflet(API)``
+    * ``http`` (pentru a facilita crearea unui server http)
+    * ``fs`` (pentru a gestiona fisiere cu Node.js)
+    * ``path`` (pentru a gestiona adresele fisierelor)
+    * ``mysql2 + promise`` (pentru a efectua conexiunea cu baza de date mySQL)
+    * ``leaflet(API)`` (pentru a avea acces la harta lumii)
+
+### Software extern utilizat:
+| Software Name | Download Link |
+|---|---|
+| `Arduino IDE` | [`https://www.arduino.cc/en/software/`](https://www.arduino.cc/en/software/) |
+| `Visual Studio Code` | [`https://code.visualstudio.com/`](https://code.visualstudio.com/) |
+| `Fusion360` | [`https://www.autodesk.com/products/fusion-360/personal`](https://www.autodesk.com/products/fusion-360/personal) |
+| `Creality Print` | [`https://www.creality.com/pages/download-software`](https://www.creality.com/pages/download-software) |
+| `KiCad` | [`https://www.kicad.org/download/windows/`](https://www.kicad.org/download/windows/) |
+| `Gemini Pro AI` | [`https://gemini.google.com/`](https://gemini.google.com/) |
+| `Canva` | [`https://www.canva.com/`](https://www.canva.com/) |
 
 -----
 
