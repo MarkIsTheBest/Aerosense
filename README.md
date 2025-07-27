@@ -24,8 +24,8 @@ La ``Aerosense/3DModels/`` se gaseste modelul 3d al carcasei printate, care faci
 La ``Aerosense/Datasheets/`` se gasesc documente specifice a diverselor parti furnizate extern al sistemului nostru, cum ar fi de exemplu: baterie ce noi o folosim.
 
 La ``Aerosense/Documentation/`` se gaseste atat documentatia cat si o prezentare powerpoint, pentru a usura intelegerea proiectului/sistemului, fiind scrisa la un mod mai general decat acest ``README.md`` care este strict technic:
-- ``Documentation.pdf`` (asa numita documentatie de 12 pagini)
-- ``Presentation.pptx`` (prezentare powerpoint generala)
+- ``Aerosense Documentation.pdf`` (asa numita documentatie de 12 pagini)
+- ``Aerosense Presentation.pptx`` (prezentare powerpoint generala)
 
 La ``Aerosense/Photos/`` se gasesc diverse poze, capturand infatisarea sistemului, atat pe dinafara cat si pe dinauntru. Aceste poze va pot ajuta in vizualizaera sistemului.
 
