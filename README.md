@@ -19,7 +19,7 @@ La ``Aerosense/Scripts/Webserver/`` se gasesc script-urile pentru Webserver, ace
 - ``index.html`` (codul de baza a front-end-ului)
 - ``style.css`` (stilistica front-end)
 
-La ``Aerosense/3DModels/`` se gaseste modelul 3d al cutiei printate, care faciliteaza locuinta intregului sistem. Acest model se gaseste in mai multe format-uri pentru a usura uzul acestora. (Fusion360)
+La ``Aerosense/3DModels/`` se gaseste modelul 3d al carcasei printate, care faciliteaza locuinta intregului sistem. Acest model se gaseste in mai multe format-uri pentru a usura uzul acestora. (Fusion360)
 
 La ``Aerosense/Datasheets/`` se gasesc documente specifice a diverselor parti furnizate extern al sistemului nostru, cum ar fi de exemplu: baterie ce noi o folosim.
 
@@ -30,6 +30,8 @@ La ``Aerosense/Documentation/`` se gaseste atat documentatia cat si o prezentare
 La ``Aerosense/Photos/`` se gasesc diverse poze, capturand infatisarea sistemului, atat pe dinafara cat si pe dinauntru. Aceste poze va pot ajuta in vizualizaera sistemului.
 
 La ``Aerosense/Schematics/`` se gaseste schematica circuitului electric facut in KiCad. Aceasta schematica nu face posibila doar visualizarea conexiuniilor electrice intre diferitii senzori, ci si a sistemului de alimentare. Urmarind aceasta schematica, proiectul poate fii facut mult mai mic prin intermediul, unui PCB presonalizat.
+
+La ``Aerosense/Identity/`` se gaseste identitatea produsului, adica logo-ul si titlul acestuia, ambele pot fii gasite si pe carcasa sistemului.
 
 -----
 
