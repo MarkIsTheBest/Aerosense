@@ -1,7 +1,37 @@
-#map { 
+/* General Page Layout & Map */
+#map-container { 
+    position: relative;
     height: 75vh; 
 }
+#map {
+    height: 100%;
+    width: 100%;
+}
 
+/* *** NEW: Grayscale filter for heatmap mode *** */
+#map.heatmap-active .leaflet-tile-pane {
+    filter: grayscale(100%) contrast(1.2);
+}
+
+/* *** NEW: Heatmap Legend Styles *** */
+#heatmap-legend {
+    position: absolute;
+    bottom: 30px; /* Position it above the default zoom controls area */
+    right: 10px;
+    z-index: 1000; /* Make sure it's on top of the map */
+    background-color: rgba(31, 41, 55, 0.85); /* Semi-transparent dark bg */
+    backdrop-filter: blur(4px);
+    border: 1px solid #4b5563;
+}
+
+body.light #heatmap-legend {
+    background-color: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(4px);
+    color: #1f2937;
+    border: 1px solid #d1d5db;
+}
+
+/* Custom Marker Icon for Waypoints */
 .sensor-data-marker-icon { 
     background-color: #f39c12;
     color: #fff;
@@ -18,6 +48,7 @@
     font-size: 12px;
 }
 
+/* Toggle Switch Styles */
 .switch {
     position: relative;
     display: inline-block;
@@ -36,7 +67,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #4b5563;
+    background-color: #4b5563; /* Default off color */
     transition: .4s;
     border-radius: 30px;
 }
@@ -52,7 +83,7 @@
     border-radius: 50%;
 }
 input:checked + .slider {
-    background-color: #3b82f6;
+    background-color: #3b82f6; /* On color */
 }
 input:checked + .slider:before {
     transform: translateX(30px);
@@ -68,10 +99,10 @@ input:checked + .slider:before {
 .data-table th, .data-table td {
     padding: 0.3rem 0.5rem;
     text-align: left;
-    border: 1px solid #4b5563;
+    border: 1px solid #4b5563; /* Dark mode border */
 }
 .data-table th {
-    background-color: #1f2937;
+    background-color: #1f2937; /* Dark mode header */
     color: white;
     position: sticky;
     top: 0;
@@ -84,7 +115,7 @@ input:checked + .slider:before {
     transition: color 0.2s;
 }
 .time-cell:hover {
-    color: #60a5fa;
+    color: #60a5fa; /* Dark mode hover */
 }
 .sort-icon {
     margin-left: 8px;
@@ -102,6 +133,7 @@ input:checked + .slider:before {
     border-top: none;
 }
 
+/* Light Theme Overrides for Data Table */
 body.light .data-table th, 
 body.light .data-table td {
     border-color: #e5e7eb;
@@ -239,15 +271,82 @@ body.light .data-table-wrapper {
     display: none;
 }
 
+/* Leaflet Popup Customization */
+.leaflet-popup-content-wrapper {
+    background: #2d3748; /* Dark background for the popup */
+    color: #e2e8f0; /* Light text */
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
 .leaflet-popup-content {
     font-size: 0.8rem;
-    max-height: 200px;
+    max-height: 250px; /* Increased max-height */
     overflow-y: auto;
+    padding-right: 5px; /* Add some padding for the scrollbar */
 }
-.leaflet-popup-content b { 
-    color: #3b82f6; 
+.leaflet-popup-content strong { 
+    color: #63b3ed; /* A nice blue for emphasis */
+}
+.leaflet-popup-content .text-base {
+    font-size: 1rem;
+    color: #ffffff;
+}
+.leaflet-popup-tip {
+    background: #2d3748;
+}
+.leaflet-container a.leaflet-popup-close-button {
+    color: #cbd5e0;
+}
+.leaflet-container a.leaflet-popup-close-button:hover {
+    color: #ffffff;
 }
 
+/* Filter Panel Styles */
+#filter-toggle-btn {
+    background-color: #1f2937;
+    transition: background-color 0.2s;
+}
+#filter-toggle-btn:hover {
+    background-color: #374151;
+}
+#filter-chevron {
+    transition: transform 0.3s ease;
+}
+.rotate-180 {
+    transform: rotate(180deg);
+}
+.filter-input {
+    width: 100%;
+    background-color: #374151;
+    border: 1px solid #4b5563;
+    color: white;
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-size: 0.9rem;
+}
+.filter-input::placeholder {
+    color: #9ca3af;
+}
+
+/* Light theme overrides for filter panel */
+body.light #filter-toggle-btn {
+    background-color: #f3f4f6;
+    color: #1f2937;
+}
+body.light #filter-toggle-btn:hover {
+    background-color: #e5e7eb;
+}
+body.light .filter-input {
+    background-color: #ffffff;
+    border-color: #d1d5db;
+    color: #1f2937;
+}
+body.light .filter-input::placeholder {
+    color: #6b7280;
+}
+
+
+/* Responsive Design */
 @media (max-width: 768px) {
     .sidebar.open {
         width: 280px;

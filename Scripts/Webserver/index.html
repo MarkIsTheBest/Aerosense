@@ -16,84 +16,182 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-900 text-gray-200">
-    <button class="sidebar-toggle" id="sidebarToggle"><i class="fas fa-history"></i></button>
 
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-content">
-            <h2 class="text-xl font-bold mb-2">Saved Flights</h2>
-            <div id="savedFlightsList" class="space-y-2 mb-6"><p class="text-gray-400 italic">No saved flights.</p></div>
-            
-            <h2 class="text-xl font-bold mb-2">Live Data Session</h2>
-            <div id="detectedFlightsList" class="space-y-2">
-            </div>
-        </div>
+    <!-- *** NEW: Notification Bar *** -->
+    <div id="notification-bar" class="fixed top-0 left-1/2 -translate-x-1/2 p-3 rounded-b-lg shadow-lg text-white text-sm z-[4000] transition-transform duration-300 -translate-y-full">
+        <span id="notification-message"></span>
     </div>
 
-    <header class="bg-black py-4 shadow-lg">
-        <div class="container mx-auto px-4 flex justify-between items-center">
-            <h1 class="text-2xl font-bold">Drone Flight Data Viewer</h1>
-            <div class="flex items-center gap-4 flex-wrap">
-                <div class="flex items-center gap-2">
-                    <span class="text-sm">Heatmap Source</span>
-                    <select id="heatmap-source-select" class="bg-gray-700 text-white text-sm rounded p-1 border border-gray-600">
-                        <option value="weighted" selected>Weighted</option>
-                        <option value="tvoc">TVOC</option>
-                        <option value="eco2">eCO2</option>
-                        <option value="co">CO</option>
-                        <option value="gaslvl">Gas Level</option>
-                    </select>
-                </div>
-                <div class="flex items-center gap-2"><span class="text-sm">Heatmap</span><label class="switch"><input type="checkbox" id="heatmap-toggle"><span class="slider"></span></label></div>
-                <div class="flex items-center gap-2"><span class="text-sm">Show Markers</span><label class="switch"><input type="checkbox" id="markers-toggle" checked><span class="slider"></span></label></div>
-                <div class="flex items-center gap-2"><span class="text-sm">Theme</span><label class="switch"><input type="checkbox" id="theme-toggle" checked><span class="slider"></span></label></div>
-                <div class="flex items-center gap-2"><span class="text-sm">Satellite View</span><label class="switch"><input type="checkbox" id="view-toggle" checked><span class="slider"></span></label></div>
-            </div>
-        </div>
-    </header>
+    <div id="app-wrapper">
+        <button class="sidebar-toggle" id="sidebarToggle"><i class="fas fa-history"></i></button>
 
-    <main class="container mx-auto px-4 py-6">
-        <div class="w-full">
-            <div class="relative mb-4">
-                <div class="flex">
-                    <input type="text" id="search-input" placeholder="Search by street name or coordinates (lat,lng)" class="w-full px-4 py-2 rounded-l-lg bg-gray-800 text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <button id="search-button" class="px-4 py-2 bg-blue-600 text-white rounded-r-lg hover:bg-blue-700 transition"><i class="fas fa-search"></i></button>
-                </div>
-            </div>
-            <div id="map" class="rounded-lg shadow-xl"></div>
-            
-            <div class="mt-6 bg-gray-800 p-4 rounded-lg shadow-lg">
-                <div class="flex justify-between items-center mb-2">
-                    <h2 class="text-xl font-semibold">Sensor Data Feed</h2>
-                    <span id="sensorDataStatus" class="text-sm text-gray-400">Fetching data...</span>
-                </div>
-                <div class="data-table-wrapper">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th data-sort-key="server_timestamp">TIME</th>
-                                <th data-sort-key="id">ID</th>
-                                <th data-sort-key="tvoc">TVOC (ppb)</th>
-                                <th data-sort-key="gaslvl">GAS (level)</th>
-                                <th data-sort-key="co">CO (ppm)</th>
-                                <th data-sort-key="eco2">CO<sub>2</sub> (ppm)</th>
-                                <th data-sort-key="pressure">PRESSURE (Pa)</th>
-                                <th data-sort-key="humidity">HUMIDITY (%)</th>
-                                <th data-sort-key="temperature">TEMP (°C)</th>
-                                <th data-sort-key="gps_lat">LAT</th>
-                                <th data-sort-key="gps_lng">LNG</th>
-                                <th data-sort-key="altitude">ALT (m)</th>
-                                <th data-sort-key="speed">SPEED (km/h)</th>
-                                <th data-sort-key="direction">DIRECTION</th>
-                                <th data-sort-key="sats">SATS</th>
-                                <th>ACTIONS</th>
-                            </tr>
-                        </thead>
-                        <tbody id="sensor-data-table-body"></tbody>
-                    </table>
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-content">
+                <h2 class="text-xl font-bold mb-2">Saved Flights</h2>
+                <div id="savedFlightsList" class="space-y-2 mb-6"><p class="text-gray-400 italic">No saved flights.</p></div>
+                
+                <h2 class="text-xl font-bold mb-2">Live Data Session</h2>
+                <div id="detectedFlightsList" class="space-y-2"></div>
+
+                <div id="login-form-sidebar" class="mt-8 pt-4 border-t border-gray-700">
+                    <h2 class="text-xl font-bold mb-2">Owner Access</h2>
+                    <div id="login-view">
+                        <p class="text-sm text-gray-400 mb-4">Login to manage data.</p>
+                        <input type="password" id="password-input" placeholder="Password" class="w-full px-4 py-2 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3">
+                        <button id="login-btn" class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-bold">Login</button>
+                        <p id="login-error" class="text-red-500 text-xs mt-2 h-4"></p>
+                    </div>
+                    <div id="logout-view" class="hidden">
+                        <p class="text-sm text-green-400 mb-4"><i class="fas fa-check-circle"></i> Logged in as Owner.</p>
+                        <button id="logout-btn" class="w-full px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-500 transition font-bold">Logout</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </main>
+
+        <header class="bg-black py-4 shadow-lg">
+            <div class="container mx-auto px-4 flex justify-between items-center">
+                <h1 class="text-2xl font-bold">Drone Flight Data Viewer</h1>
+                <div class="flex items-center gap-4 flex-wrap">
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm">Heatmap Source</span>
+                        <select id="heatmap-source-select" class="bg-gray-700 text-white text-sm rounded p-1 border border-gray-600">
+                            <option value="weighted" selected>Weighted</option>
+                            <option value="tvoc">TVOC</option>
+                            <option value="eco2">eCO2</option>
+                            <option value="co">CO</option>
+                            <option value="gaslvl">Gas Level</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center gap-2"><span class="text-sm">Heatmap</span><label class="switch"><input type="checkbox" id="heatmap-toggle"><span class="slider"></span></label></div>
+                    <div class="flex items-center gap-2"><span class="text-sm">Show Markers</span><label class="switch"><input type="checkbox" id="markers-toggle" checked><span class="slider"></span></label></div>
+                    <div class="flex items-center gap-2"><span class="text-sm">Theme</span><label class="switch"><input type="checkbox" id="theme-toggle" checked><span class="slider"></span></label></div>
+                    <div class="flex items-center gap-2"><span class="text-sm">Satellite View</span><label class="switch"><input type="checkbox" id="view-toggle" checked><span class="slider"></span></label></div>
+                </div>
+            </div>
+        </header>
+
+        <main class="container mx-auto px-4 py-6">
+            <div class="w-full">
+                <div class="relative mb-4">
+                    <div class="flex">
+                        <input type="text" id="search-input" placeholder="Search by street name or coordinates (lat,lng)" class="w-full px-4 py-2 rounded-l-lg bg-gray-800 text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <button id="search-button" class="px-4 py-2 bg-blue-600 text-white rounded-r-lg hover:bg-blue-700 transition"><i class="fas fa-search"></i></button>
+                    </div>
+                </div>
+
+                <div id="filter-panel" class="mb-4 bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+                    <button id="filter-toggle-btn" class="w-full p-3 text-left font-semibold flex justify-between items-center">
+                        <span><i class="fas fa-filter mr-2"></i>Filter Data Points</span>
+                        <i id="filter-chevron" class="fas fa-chevron-down transition-transform"></i>
+                    </button>
+                    <div id="filter-content" class="p-4 border-t border-gray-700 hidden">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div class="filter-group">
+                                <label class="block text-sm font-medium mb-1">Altitude (m)</label>
+                                <div class="flex gap-2">
+                                    <input type="number" id="filter-altitude-min" placeholder="Min" class="filter-input">
+                                    <input type="number" id="filter-altitude-max" placeholder="Max" class="filter-input">
+                                </div>
+                            </div>
+                            <div class="filter-group">
+                                <label class="block text-sm font-medium mb-1">Temperature (°C)</label>
+                                <div class="flex gap-2">
+                                    <input type="number" id="filter-temperature-min" placeholder="Min" class="filter-input">
+                                    <input type="number" id="filter-temperature-max" placeholder="Max" class="filter-input">
+                                </div>
+                            </div>
+                            <div class="filter-group">
+                                <label class="block text-sm font-medium mb-1">Speed (km/h)</label>
+                                <div class="flex gap-2">
+                                    <input type="number" id="filter-speed-min" placeholder="Min" class="filter-input">
+                                    <input type="number" id="filter-speed-max" placeholder="Max" class="filter-input">
+                                </div>
+                            </div>
+                            <div class="filter-group">
+                                <label class="block text-sm font-medium mb-1">TVOC (ppb)</label>
+                                <div class="flex gap-2">
+                                    <input type="number" id="filter-tvoc-min" placeholder="Min" class="filter-input">
+                                    <input type="number" id="filter-tvoc-max" placeholder="Max" class="filter-input">
+                                </div>
+                            </div>
+                            <div class="filter-group">
+                                <label class="block text-sm font-medium mb-1">eCO2 (ppm)</label>
+                                <div class="flex gap-2">
+                                    <input type="number" id="filter-eco2-min" placeholder="Min" class="filter-input">
+                                    <input type="number" id="filter-eco2-max" placeholder="Max" class="filter-input">
+                                </div>
+                            </div>
+                            <div class="filter-group">
+                                <label class="block text-sm font-medium mb-1">CO (ppm)</label>
+                                <div class="flex gap-2">
+                                    <input type="number" id="filter-co-min" placeholder="Min" class="filter-input">
+                                    <input type="number" id="filter-co-max" placeholder="Max" class="filter-input">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex justify-end gap-3">
+                            <button id="reset-filters-btn" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-500 transition">
+                                <i class="fas fa-undo mr-2"></i>Reset
+                            </button>
+                            <button id="apply-filters-btn" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+                                <i class="fas fa-check mr-2"></i>Apply Filters
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="map-container" class="rounded-lg shadow-xl">
+                    <div id="map" class="h-full w-full rounded-lg"></div>
+                    <div id="heatmap-legend" class="leaflet-control leaflet-bar bg-gray-800 p-2 rounded-lg shadow-lg hidden text-white w-48">
+                        <p class="text-sm font-bold mb-1 text-center" id="legend-title">Weighted Pollution</p>
+                        <div id="legend-gradient" class="h-3 w-full rounded mb-1"></div>
+                        <div class="flex justify-between text-xs">
+                            <span id="legend-min">0</span>
+                            <span id="legend-max">1</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-6 bg-gray-800 p-4 rounded-lg shadow-lg">
+                    <div class="flex justify-between items-center mb-2">
+                        <h2 class="text-xl font-semibold">Sensor Data Feed</h2>
+                        <div class="flex items-center gap-4">
+                            <span id="sensorDataStatus" class="text-sm text-gray-400">Fetching data...</span>
+                            <button id="clear-all-data-btn" class="owner-control px-3 py-1 bg-red-800 text-white text-xs rounded hover:bg-red-700 transition flex items-center gap-2" title="Delete all data from the database">
+                                <i class="fas fa-exclamation-triangle"></i> Clear All Data
+                            </button>
+                        </div>
+                    </div>
+                    <div class="data-table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th data-sort-key="server_timestamp">TIME</th>
+                                    <th data-sort-key="id">ID</th>
+                                    <th data-sort-key="tvoc">TVOC (ppb)</th>
+                                    <th data-sort-key="gaslvl">GAS (level)</th>
+                                    <th data-sort-key="co">CO (ppm)</th>
+                                    <th data-sort-key="eco2">CO<sub>2</sub> (ppm)</th>
+                                    <th data-sort-key="pressure">PRESSURE (Pa)</th>
+                                    <th data-sort-key="humidity">HUMIDITY (%)</th>
+                                    <th data-sort-key="temperature">TEMP (°C)</th>
+                                    <th data-sort-key="gps_lat">LAT</th>
+                                    <th data-sort-key="gps_lng">LNG</th>
+                                    <th data-sort-key="altitude">ALT (m)</th>
+                                    <th data-sort-key="speed">SPEED (km/h)</th>
+                                    <th data-sort-key="direction">DIRECTION</th>
+                                    <th data-sort-key="sats">SATS</th>
+                                    <th class="owner-control">ACTIONS</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sensor-data-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
 
     <div id="delete-confirm-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[2000]">
         <div class="bg-gray-800 p-6 rounded-lg shadow-xl text-center w-11/12 max-w-md">
@@ -102,6 +200,18 @@
             <div>
                 <button id="cancel-delete-btn-modal" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-500 mr-4">Cancel</button>
                 <button id="confirm-delete-btn-modal" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-500">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="delete-all-confirm-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[2000]">
+        <div class="bg-gray-800 p-6 rounded-lg shadow-xl text-center w-11/12 max-w-md">
+            <h3 class="text-xl font-bold text-red-500 mb-2">DANGER ZONE</h3>
+            <p class="text-lg mb-4">Are you absolutely sure you want to delete ALL flight data?</p>
+            <p class="text-sm text-gray-400 mb-6">This will permanently erase every record from the database. This action cannot be undone.</p>
+            <div>
+                <button id="cancel-delete-all-btn-modal" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-500 mr-4">Cancel</button>
+                <button id="confirm-delete-all-btn-modal" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-500">Yes, Delete Everything</button>
             </div>
         </div>
     </div>
@@ -118,29 +228,31 @@
         let fullSensorHistory = []; 
         let savedFlights = [];
         let currentFlightData = [];
+        let currentlyDisplayedData = [];
         const sensorDataMarkersLayer = L.layerGroup().addTo(map); 
         const selectedFlightPolyline = L.polyline([], { color: '#3b82f6', weight: 4, opacity: 0.9 }).addTo(map);
+        
+        const HEATMAP_GRADIENTS = {
+            weighted: { 0.2: 'blue', 0.4: 'lime', 0.6: 'yellow', 0.8: 'orange', 1.0: 'red' },
+            tvoc:     { 0.2: '#f3e8ff', 0.5: '#a855f7', 0.8: '#7e22ce', 1.0: '#581c87' },
+            eco2:     { 0.2: '#dcfce7', 0.5: '#86efac', 0.8: '#facc15', 1.0: '#ca8a04' },
+            co:       { 0.1: '#e5e7eb', 0.4: '#ef4444', 0.8: '#b91c1c', 1.0: '#450a0a' },
+            gaslvl:   { 0.1: '#fef3c7', 0.4: '#fb923c', 0.8: '#f97316', 1.0: '#c2410c' }
+        };
+
         let heatLayer = L.heatLayer([], { 
-            max: 1.0, 
-            gradient: { 0.4: 'blue', 0.65: 'lime', 0.8: 'yellow', 1.0: 'red' } 
+            radius: 25,
+            blur: 15,
+            maxZoom: 18,
+            gradient: HEATMAP_GRADIENTS['weighted']
         });
         
-        const HEATMAP_RADIUS_METERS = 100;
         let sortState = { key: 'server_timestamp', direction: 'desc' };
         let heatmapSource = 'weighted';
         const SAVED_FLIGHTS_KEY = 'droneSavedFlights';
-        
+        let activeFilters = {};
         let isLiveViewActive = true;
-
-        function updateHeatLayerRadius() {
-            if (!map.hasLayer(heatLayer)) return;
-            const currentZoom = map.getZoom();
-            const centerLat = map.getCenter().lat;
-            const metersPerPixel = 40075016.686 * Math.abs(Math.cos(centerLat * Math.PI / 180)) / Math.pow(2, currentZoom + 8);
-            const newRadius = HEATMAP_RADIUS_METERS / metersPerPixel;
-            const newBlur = newRadius * 0.8;
-            heatLayer.setOptions({ radius: newRadius, blur: newBlur });
-        }
+        let isOwnerLoggedIn = false;
 
         function getSavedFlightsFromStorage() {
             const data = localStorage.getItem(SAVED_FLIGHTS_KEY);
@@ -165,7 +277,9 @@
                 pressure: reading.pressure,
                 path: reading.path,
                 id: reading.id,
-                imuAccel: `X:${reading.imuXAccel}, Y:${reading.imuYAccel}, Z:${reading.imuZAccel}`,
+                imuXAccel: reading.imuXaccel,
+                imuYAccel: reading.imuYaccel,
+                imuZAccel: reading.imuZaccel,
                 altitude: reading.altitude,
                 speed: reading.speed,
                 sats: reading.sats,
@@ -219,7 +333,7 @@
                         <div class="flight-item-actions">
                             <div class="initial-actions flex gap-2">
                                 <button class="edit-flight-btn" title="Edit Name"><i class="fas fa-pencil-alt"></i></button>
-                                <button class="delete-flight-btn" title="Delete Flight"><i class="fas fa-trash"></i></button>
+                                <button class="delete-flight-btn owner-control" title="Delete Flight"><i class="fas fa-trash"></i></button>
                             </div>
                             <div class="confirm-actions hidden flex items-center gap-2">
                                 <span class="text-xs text-red-400">Sure?</span>
@@ -271,22 +385,90 @@
             flightItem.querySelector('.confirm-actions').classList.toggle('hidden', !showConfirm);
         }
 
-        function displayFlight(flightData) {
-            // *** MODIFIED: Determine if the view is live based on the data source ***
+        function applyFilters(data) {
+            if (Object.keys(activeFilters).length === 0) {
+                return data;
+            }
+
+            return data.filter(reading => {
+                for (const key in activeFilters) {
+                    const filter = activeFilters[key];
+                    const value = parseFloat(reading[key]);
+
+                    if (isNaN(value)) return false; 
+
+                    if (filter.min != null && value < filter.min) {
+                        return false;
+                    }
+                    if (filter.max != null && value > filter.max) {
+                        return false;
+                    }
+                }
+                return true;
+            });
+        }
+
+        function updateAndApplyFilters() {
+            activeFilters = {};
+            const filterInputs = [
+                { key: 'altitude', min: 'filter-altitude-min', max: 'filter-altitude-max' },
+                { key: 'temperature', min: 'filter-temperature-min', max: 'filter-temperature-max' },
+                { key: 'speed', min: 'filter-speed-min', max: 'filter-speed-max' },
+                { key: 'tvoc', min: 'filter-tvoc-min', max: 'filter-tvoc-max' },
+                { key: 'eco2', min: 'filter-eco2-min', max: 'filter-eco2-max' },
+                { key: 'co', min: 'filter-co-min', max: 'filter-co-max' },
+            ];
+
+            filterInputs.forEach(f => {
+                const minVal = document.getElementById(f.min).value;
+                const maxVal = document.getElementById(f.max).value;
+                const filter = {};
+                if (minVal !== '') filter.min = parseFloat(minVal);
+                if (maxVal !== '') filter.max = parseFloat(maxVal);
+
+                if (Object.keys(filter).length > 0) {
+                    activeFilters[f.key] = filter;
+                }
+            });
+
+            displayFlight(currentFlightData, false);
+        }
+
+        function displayFlight(flightData, shouldFitBounds = true) {
             isLiveViewActive = (flightData === fullSensorHistory);
             currentFlightData = flightData;
+            currentlyDisplayedData = applyFilters(currentFlightData);
+
+            const mapData = currentlyDisplayedData.filter(r => {
+                const lat = parseFloat(r.gps_lat);
+                const lng = parseFloat(r.gps_lng);
+                return !(lat === 0 && lng === 0);
+            });
+
             sortAndRenderTable();
-            updateHeatmap(currentFlightData);
-            updateHeatLayerRadius();
-            const flightPathCoords = currentFlightData
+            updateHeatmap(mapData);
+            
+            const flightPathCoords = mapData
                 .map(r => [parseFloat(r.gps_lat), parseFloat(r.gps_lng)])
                 .filter(coords => isValidLatLng(coords[0], coords[1]));
+
             selectedFlightPolyline.setLatLngs(flightPathCoords);
-            if (flightPathCoords.length > 0) {
-                map.fitBounds(selectedFlightPolyline.getBounds().pad(0.1));
+
+            if (shouldFitBounds) {
+                if (flightPathCoords.length > 0) {
+                    map.fitBounds(L.polyline(flightPathCoords).getBounds().pad(0.1));
+                } else if (currentFlightData.length > 0) {
+                    const originalBounds = L.polyline(currentFlightData
+                        .map(r => [parseFloat(r.gps_lat), parseFloat(r.gps_lng)])
+                        .filter(coords => isValidLatLng(coords[0], coords[1]) && !(coords[0] === 0 && coords[1] === 0))
+                    ).getBounds();
+                    if(originalBounds.isValid()) {
+                         map.fitBounds(originalBounds.pad(0.1));
+                    }
+                }
             }
-            document.getElementById('sidebar').classList.remove('open');
-            document.getElementById('sensorDataStatus').textContent = `Displaying ${currentFlightData.length} readings.`;
+            
+            document.getElementById('sensorDataStatus').textContent = `Displaying ${currentlyDisplayedData.length} readings.`;
         }
         
         function renderMarkers(data) {
@@ -295,20 +477,51 @@
                 try {
                     const lat = parseFloat(reading.gps_lat);
                     const lng = parseFloat(reading.gps_lng);
-                    if (isValidLatLng(lat, lng)) {
-                        const markerCounter = index + 1;
-                        const iconHtml = `<div class="sensor-data-marker-icon" title="Waypoint ${markerCounter}">${markerCounter}</div>`;
-                        const marker = L.marker([lat, lng], {
-                            icon: L.divIcon({ className: 'sensor-data-icon', html: iconHtml, iconSize: [28, 28], iconAnchor: [14, 14] })
-                        }).addTo(sensorDataMarkersLayer);
-                        
-                        let popupContent = `<div class="font-mono text-xs"><strong>Waypoint #${markerCounter} Data:</strong><br>`;
-                        Object.keys(reading).forEach(key => {
-                            popupContent += `<b>${key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}:</b> ${reading[key] ?? 'N/A'}<br>`;
-                        });
-                        popupContent += `</div>`;
-                        marker.bindPopup(popupContent);
+                    
+                    if (!isValidLatLng(lat, lng) || (lat === 0 && lng === 0)) {
+                        return;
                     }
+
+                    const markerCounter = index + 1;
+                    const iconHtml = `<div class="sensor-data-marker-icon" title="Waypoint ${markerCounter}">${markerCounter}</div>`;
+                    const marker = L.marker([lat, lng], {
+                        icon: L.divIcon({ className: 'sensor-data-icon', html: iconHtml, iconSize: [28, 28], iconAnchor: [14, 14] })
+                    }).addTo(sensorDataMarkersLayer);
+                    
+                    const popupContent = `
+                        <div class="font-mono text-xs">
+                            <strong class="text-base">Waypoint #${markerCounter}</strong><br>
+                            <hr class="my-1 border-gray-600">
+                            <strong>Time:</strong> ${new Date(reading.server_timestamp).toLocaleString() ?? 'N/A'}<br>
+                            <strong>ID:</strong> ${reading.id ?? 'N/A'}<br>
+                            <hr class="my-1 border-gray-600">
+                            <strong><i class="fas fa-map-marker-alt fa-fw mr-1"></i> GPS:</strong><br>
+                            &nbsp;&nbsp;<strong>Lat:</strong> ${Number(reading.gps_lat).toFixed(6) ?? 'N/A'}<br>
+                            &nbsp;&nbsp;<strong>Lng:</strong> ${Number(reading.gps_lng).toFixed(6) ?? 'N/A'}<br>
+                            &nbsp;&nbsp;<strong>Alt:</strong> ${Number(reading.altitude).toFixed(2) ?? 'N/A'} m<br>
+                            &nbsp;&nbsp;<strong>Speed:</strong> ${Number(reading.speed).toFixed(2) ?? 'N/A'} km/h<br>
+                            &nbsp;&nbsp;<strong>Sats:</strong> ${reading.sats ?? 'N/A'}<br>
+                            &nbsp;&nbsp;<strong>Dir:</strong> ${reading.direction ?? 'N/A'}<br>
+                            <hr class="my-1 border-gray-600">
+                            <strong><i class="fas fa-wind fa-fw mr-1"></i> Gas Sensors:</strong><br>
+                            &nbsp;&nbsp;<strong>TVOC:</strong> ${reading.tvoc ?? 'N/A'} ppb<br>
+                            &nbsp;&nbsp;<strong>eCO2:</strong> ${reading.eco2 ?? 'N/A'} ppm<br>
+                            &nbsp;&nbsp;<strong>CO:</strong> ${reading.co ?? 'N/A'} ppm<br>
+                            &nbsp;&nbsp;<strong>Gas Lvl:</strong> ${reading.gaslvl ?? 'N/A'}<br>
+                            <hr class="my-1 border-gray-600">
+                            <strong><i class="fas fa-thermometer-half fa-fw mr-1"></i> Environment:</strong><br>
+                            &nbsp;&nbsp;<strong>Temp:</strong> ${Number(reading.temperature).toFixed(2) ?? 'N/A'} °C<br>
+                            &nbsp;&nbsp;<strong>Humidity:</strong> ${Number(reading.humidity).toFixed(2) ?? 'N/A'} %<br>
+                            &nbsp;&nbsp;<strong>Pressure:</strong> ${reading.pressure ?? 'N/A'} Pa<br>
+                            <hr class="my-1 border-gray-600">
+                            <strong><i class="fas fa-rocket fa-fw mr-1"></i> IMU Accel:</strong><br>
+                            &nbsp;&nbsp;<strong>X:</strong> ${Number(reading.imuXAccel).toFixed(4) ?? 'N/A'} m/s²<br>
+                            &nbsp;&nbsp;<strong>Y:</strong> ${Number(reading.imuYAccel).toFixed(4) ?? 'N/A'} m/s²<br>
+                            &nbsp;&nbsp;<strong>Z:</strong> ${Number(reading.imuZAccel).toFixed(4) ?? 'N/A'} m/s²<br>
+                        </div>
+                    `;
+                    marker.bindPopup(popupContent);
+                    
                 } catch (error) {
                     console.error(`Failed to render marker for point ${index}:`, reading, error);
                 }
@@ -322,7 +535,7 @@
                 const row = tableBody.insertRow();
                 const cell = row.insertCell();
                 cell.colSpan = 16;
-                cell.textContent = "No sensor data for this flight.";
+                cell.textContent = "No sensor data for the current filters.";
                 cell.style.textAlign = "center";
                 return;
             }
@@ -342,16 +555,17 @@
                 row.insertCell().textContent = reading.co ?? 'N/A';
                 row.insertCell().textContent = reading.eco2 ?? 'N/A';
                 row.insertCell().textContent = reading.pressure ?? 'N/A';
-                row.insertCell().textContent = reading.humidity ?? 'N/A';
-                row.insertCell().textContent = reading.temperature ?? 'N/A';
-                row.insertCell().textContent = reading.gps_lat ?? 'N/A';
-                row.insertCell().textContent = reading.gps_lng ?? 'N/A';
-                row.insertCell().textContent = reading.altitude ?? 'N/A';
-                row.insertCell().textContent = reading.speed ?? 'N/A';
+                row.insertCell().textContent = Number(reading.humidity).toFixed(2) ?? 'N/A';
+                row.insertCell().textContent = Number(reading.temperature).toFixed(2) ?? 'N/A';
+                row.insertCell().textContent = Number(reading.gps_lat).toFixed(6) ?? 'N/A';
+                row.insertCell().textContent = Number(reading.gps_lng).toFixed(6) ?? 'N/A';
+                row.insertCell().textContent = Number(reading.altitude).toFixed(2) ?? 'N/A';
+                row.insertCell().textContent = Number(reading.speed).toFixed(2) ?? 'N/A';
                 row.insertCell().textContent = reading.direction ?? 'N/A';
                 row.insertCell().textContent = reading.sats ?? 'N/A';
                 
                 const actionCell = row.insertCell();
+                actionCell.className = 'owner-control';
                 actionCell.innerHTML = `<button class="delete-row-btn p-1" data-id="${reading.id}" title="Delete this entry">
                                             <i class="fas fa-trash-alt text-red-500 hover:text-red-400"></i>
                                         </button>`;
@@ -359,8 +573,8 @@
         }
 
         function sortAndRenderTable() {
-            if (!currentFlightData) return;
-            const sortedData = [...currentFlightData].sort((a, b) => {
+            if (!currentlyDisplayedData) return;
+            const sortedData = [...currentlyDisplayedData].sort((a, b) => {
                 const valA = a[sortState.key];
                 const valB = b[sortState.key];
                 let comparison = 0;
@@ -379,7 +593,8 @@
                 return sortState.direction === 'asc' ? comparison : -comparison;
             });
             renderTable(sortedData);
-            renderMarkers(sortedData);
+            const mapData = sortedData.filter(r => !(parseFloat(r.gps_lat) === 0 && parseFloat(r.gps_lng) === 0));
+            renderMarkers(mapData);
             updateSortIcons();
         }
 
@@ -418,8 +633,46 @@
             return totalScore;
         }
 
+        function updateLegend(min, max, source) {
+            const legendMin = document.getElementById('legend-min');
+            const legendMax = document.getElementById('legend-max');
+            const legendTitle = document.getElementById('legend-title');
+            const gradientEl = document.getElementById('legend-gradient');
+
+            const formatNumber = (num) => {
+                if (num > 100) return Math.round(num);
+                if (num > 1) return num.toFixed(1);
+                return num.toFixed(2);
+            };
+
+            legendMin.textContent = formatNumber(min);
+            legendMax.textContent = formatNumber(max);
+
+            const sourceNames = {
+                weighted: 'Weighted Pollution',
+                tvoc: 'TVOC (ppb)',
+                eco2: 'eCO2 (ppm)',
+                co: 'CO (ppm)',
+                gaslvl: 'Gas Level'
+            };
+            legendTitle.textContent = sourceNames[source] || 'Heatmap';
+            
+            const gradient = HEATMAP_GRADIENTS[source] || HEATMAP_GRADIENTS['weighted'];
+            const gradientCss = Object.keys(gradient).map(stop => `${gradient[stop]} ${stop*100}%`).join(', ');
+            gradientEl.style.background = `linear-gradient(to right, ${gradientCss})`;
+        }
+
         function updateHeatmap(data) {
-            if (!data || data.length === 0) { heatLayer.setLatLngs([]); return; }
+            const newGradient = HEATMAP_GRADIENTS[heatmapSource] || HEATMAP_GRADIENTS['weighted'];
+            heatLayer.setOptions({ gradient: newGradient });
+
+            if (!data || data.length === 0) { 
+                heatLayer.setLatLngs([]); 
+                if (document.getElementById('map').classList.contains('heatmap-active')) {
+                    updateLegend(0, 0, heatmapSource);
+                }
+                return; 
+            }
             const processedData = data.map(r => {
                 let value;
                 if (heatmapSource === 'weighted') { value = calculateWPI(r); } 
@@ -427,11 +680,22 @@
                 return { lat: parseFloat(r.gps_lat), lng: parseFloat(r.gps_lng), value: value };
             }).filter(p => isValidLatLng(p.lat, p.lng) && !isNaN(p.value));
 
-            if (processedData.length === 0) { heatLayer.setLatLngs([]); return; }
+            if (processedData.length === 0) { 
+                heatLayer.setLatLngs([]); 
+                if (document.getElementById('map').classList.contains('heatmap-active')) {
+                    updateLegend(0, 0, heatmapSource);
+                }
+                return; 
+            }
             const values = processedData.map(p => p.value);
             const minVal = Math.min(...values);
             const maxVal = Math.max(...values);
             const range = maxVal - minVal;
+            
+            if (document.getElementById('map').classList.contains('heatmap-active')) {
+                updateLegend(minVal, maxVal, heatmapSource);
+            }
+
             const heatData = processedData.map(p => {
                 const intensity = range > 0 ? (p.value - minVal) / range : 0.5;
                 return [p.lat, p.lng, intensity];
@@ -452,7 +716,7 @@
                 
                 renderDetectedFlightsList();
                 renderSavedFlightsList();
-                displayFlight(fullSensorHistory);
+                displayFlight(fullSensorHistory, true);
                 
             } catch (error) {
                 console.error('Failed to fetch data:', error);
@@ -462,6 +726,7 @@
                 sortAndRenderTable();
             }
         }
+        
         async function fetchUpdates() {
             try {
                 const response = await fetch('/api/data');
@@ -475,7 +740,7 @@
                 renderDetectedFlightsList();
 
                 if (isLiveViewActive) {
-                    displayFlight(fullSensorHistory);
+                    displayFlight(fullSensorHistory, false);
                 }
             } catch (error) {
                 console.error('Failed to fetch updates:', error);
@@ -506,6 +771,11 @@
             searchInput.classList.toggle('text-gray-800', !isDark); searchInput.classList.toggle('border-gray-300', !isDark);
             document.querySelector('.data-table-wrapper').parentElement.classList.toggle('bg-gray-800', isDark);
             document.querySelector('.data-table-wrapper').parentElement.classList.toggle('bg-gray-100', !isDark);
+            document.getElementById('filter-panel').classList.toggle('bg-gray-800', isDark);
+            document.getElementById('filter-panel').classList.toggle('bg-white', !isDark);
+            document.getElementById('filter-content').classList.toggle('border-gray-700', isDark);
+            document.getElementById('filter-content').classList.toggle('border-gray-200', !isDark);
+
             if (currentTiles !== satelliteTiles) {  map.removeLayer(currentTiles); currentTiles = isDark ? darkTiles : lightTiles; currentTiles.addTo(map); }
         }
 
@@ -515,35 +785,127 @@
             else { currentTiles = document.getElementById('theme-toggle').checked ? darkTiles : lightTiles; }
             currentTiles.addTo(map);
         }
+        
+        // *** NEW: Notification function ***
+        let notificationTimeout;
+        function showNotification(message, type = 'info') {
+            const notificationBar = document.getElementById('notification-bar');
+            const messageEl = document.getElementById('notification-message');
+
+            clearTimeout(notificationTimeout);
+
+            notificationBar.classList.remove('bg-red-600', 'bg-blue-600');
+            if (type === 'error') {
+                notificationBar.classList.add('bg-red-600');
+            } else {
+                notificationBar.classList.add('bg-blue-600');
+            }
+
+            messageEl.textContent = message;
+            notificationBar.style.transform = 'translate(-50%, 0)';
+
+            notificationTimeout = setTimeout(() => {
+                notificationBar.style.transform = 'translate(-50%, -100%)';
+            }, 3000);
+        }
+
+        function handleLogin() {
+            const passwordInput = document.getElementById('password-input');
+            const loginError = document.getElementById('login-error');
+            if (passwordInput.value === 'bestfriends1.') {
+                isOwnerLoggedIn = true;
+                sessionStorage.setItem('droneViewerOwner', 'true');
+                document.body.classList.add('logged-in');
+                loginError.textContent = '';
+                passwordInput.value = '';
+                checkLoginState();
+            } else {
+                loginError.textContent = 'Incorrect password.';
+            }
+        }
+
+        function handleLogout() {
+            isOwnerLoggedIn = false;
+            sessionStorage.removeItem('droneViewerOwner');
+            document.body.classList.remove('logged-in');
+            checkLoginState();
+        }
+
+        function checkLoginState() {
+            const loginView = document.getElementById('login-view');
+            const logoutView = document.getElementById('logout-view');
+            if (sessionStorage.getItem('droneViewerOwner') === 'true') {
+                isOwnerLoggedIn = true;
+                document.body.classList.add('logged-in');
+                loginView.classList.add('hidden');
+                logoutView.classList.remove('hidden');
+            } else {
+                isOwnerLoggedIn = false;
+                document.body.classList.remove('logged-in');
+                loginView.classList.remove('hidden');
+                logoutView.classList.add('hidden');
+            }
+        }
 
         document.addEventListener('DOMContentLoaded', function() {
+            checkLoginState();
+            
             toggleTheme(true); toggleView(true);  
             document.getElementById('theme-toggle').checked = true;
             document.getElementById('view-toggle').checked = true;
             document.getElementById('markers-toggle').checked = true;
             
             fetchInitialData();
-
+            
             setInterval(fetchUpdates, 5000);
 
-            map.on('zoomend', updateHeatLayerRadius);
+            document.getElementById('login-btn').addEventListener('click', handleLogin);
+            document.getElementById('password-input').addEventListener('keypress', e => { if (e.key === 'Enter') handleLogin(); });
+            document.getElementById('logout-btn').addEventListener('click', handleLogout);
+
             document.getElementById('sidebarToggle').addEventListener('click', () => document.getElementById('sidebar').classList.toggle('open'));
             document.getElementById('search-button').addEventListener('click', handleSearch);
             document.getElementById('search-input').addEventListener('keypress', e => { if (e.key === 'Enter') handleSearch(); });
             document.getElementById('theme-toggle').addEventListener('change', function() { toggleTheme(this.checked); });
             document.getElementById('view-toggle').addEventListener('change', function() { toggleView(this.checked); });
             
-            document.getElementById('heatmap-toggle').addEventListener('change', function() { 
-                if (map.hasLayer(heatLayer)) {
-                    map.removeLayer(heatLayer);
-                } else {
+            document.getElementById('heatmap-toggle').addEventListener('change', function() {
+                const mapContainer = document.getElementById('map');
+                const legend = document.getElementById('heatmap-legend');
+
+                if (this.checked) {
+                    mapContainer.classList.add('heatmap-active');
                     map.addLayer(heatLayer);
-                    updateHeatLayerRadius(); 
+                    const mapData = currentlyDisplayedData.filter(r => !(parseFloat(r.gps_lat) === 0 && parseFloat(r.gps_lng) === 0));
+                    updateHeatmap(mapData);
+                    legend.classList.remove('hidden');
+                } else {
+                    mapContainer.classList.remove('heatmap-active');
+                    map.removeLayer(heatLayer);
+                    legend.classList.add('hidden');
                 }
             });
 
             document.getElementById('markers-toggle').addEventListener('change', function() { map.hasLayer(sensorDataMarkersLayer) ? map.removeLayer(sensorDataMarkersLayer) : map.addLayer(sensorDataMarkersLayer); });
-            document.getElementById('heatmap-source-select').addEventListener('change', function(e) { heatmapSource = e.target.value; updateHeatmap(currentFlightData); });
+            
+            document.getElementById('heatmap-source-select').addEventListener('change', function(e) { 
+                heatmapSource = e.target.value; 
+                const mapData = currentlyDisplayedData.filter(r => !(parseFloat(r.gps_lat) === 0 && parseFloat(r.gps_lng) === 0));
+                updateHeatmap(mapData); 
+            });
+
+            document.getElementById('filter-toggle-btn').addEventListener('click', () => {
+                document.getElementById('filter-content').classList.toggle('hidden');
+                document.getElementById('filter-chevron').classList.toggle('rotate-180');
+            });
+
+            document.getElementById('apply-filters-btn').addEventListener('click', updateAndApplyFilters);
+
+            document.getElementById('reset-filters-btn').addEventListener('click', () => {
+                document.querySelectorAll('#filter-content input').forEach(input => input.value = '');
+                updateAndApplyFilters();
+            });
+
 
             document.querySelectorAll('.data-table th').forEach(th => {
                 th.addEventListener('click', () => {
@@ -561,10 +923,25 @@
             let pointIdToDelete = null;
 
             document.getElementById('sensor-data-table-body').addEventListener('click', function(e) {
+                const row = e.target.closest('tr');
+                if (!row) return;
+
                 const deleteButton = e.target.closest('.delete-row-btn');
                 if (deleteButton) {
-                    pointIdToDelete = parseInt(deleteButton.dataset.id);
-                    deleteModal.classList.remove('hidden');
+                    if (isOwnerLoggedIn) {
+                        pointIdToDelete = parseInt(deleteButton.dataset.id);
+                        deleteModal.classList.remove('hidden');
+                    } else {
+                        showNotification('Owner login required to delete data points.', 'error');
+                    }
+                    return;
+                }
+
+                const lat = parseFloat(row.dataset.lat);
+                const lng = parseFloat(row.dataset.lng);
+
+                if (isValidLatLng(lat, lng) && !(lat === 0 && lng === 0)) {
+                    map.setView([lat, lng], 18);
                 }
             });
 
@@ -578,12 +955,17 @@
                 try {
                     const response = await fetch(`/api/data/${pointIdToDelete}`, { method: 'DELETE' });
                     if (!response.ok) throw new Error('Server responded with an error.');
+                    
                     fullSensorHistory = fullSensorHistory.filter(p => p.id !== pointIdToDelete);
                     savedFlights.forEach(flight => {
                         flight.data = flight.data.filter(p => p.id !== pointIdToDelete);
                     });
+                    
                     saveFlightsToStorage();
-                    displayFlight(fullSensorHistory);
+                    
+                    const viewToRefresh = isLiveViewActive ? fullSensorHistory : currentFlightData;
+                    displayFlight(viewToRefresh, false);
+
                     renderSavedFlightsList();
                     renderDetectedFlightsList();
                 } catch (error) {
@@ -594,6 +976,50 @@
                     pointIdToDelete = null;
                 }
             });
+
+            const deleteAllModal = document.getElementById('delete-all-confirm-modal');
+            const confirmDeleteAllBtn = document.getElementById('confirm-delete-all-btn-modal');
+            const cancelDeleteAllBtn = document.getElementById('cancel-delete-all-btn-modal');
+
+            document.getElementById('clear-all-data-btn').addEventListener('click', () => {
+                if (isOwnerLoggedIn) {
+                    deleteAllModal.classList.remove('hidden');
+                } else {
+                    showNotification('Owner login required to clear all data.', 'error');
+                }
+            });
+
+            cancelDeleteAllBtn.addEventListener('click', () => {
+                deleteAllModal.classList.add('hidden');
+            });
+
+            confirmDeleteAllBtn.addEventListener('click', async () => {
+                try {
+                    const response = await fetch('/api/data/all', { method: 'DELETE' });
+                    if (!response.ok) {
+                        const errorResult = await response.json();
+                        throw new Error(errorResult.error || 'Server responded with an error.');
+                    }
+                    
+                    fullSensorHistory = [];
+                    savedFlights = [];
+                    currentFlightData = [];
+                    currentlyDisplayedData = [];
+                    
+                    saveFlightsToStorage();
+
+                    renderSavedFlightsList();
+                    renderDetectedFlightsList();
+                    displayFlight([], false);
+
+                } catch (error) {
+                    console.error('Failed to delete all data:', error);
+                    alert(`Error: Could not delete all data. ${error.message}`);
+                } finally {
+                    deleteAllModal.classList.add('hidden');
+                }
+            });
+
 
             const detectedFlightsContainer = document.getElementById('detectedFlightsList');
             detectedFlightsContainer.addEventListener('click', (e) => {
@@ -606,7 +1032,7 @@
                 } else if (e.target.closest('.cancel-save-btn')) {
                     toggleSaveForm(flightItem, false);
                 } else if (e.target.closest('.flight-item-header')) {
-                    displayFlight(fullSensorHistory);
+                    displayFlight(fullSensorHistory, true);
                     document.querySelectorAll('.flight-item').forEach(el => el.classList.remove('selected'));
                     flightItem.classList.add('selected');
                 }
@@ -620,7 +1046,11 @@
                 if (e.target.closest('.edit-flight-btn')) {
                     toggleEditFlightName(flightItem);
                 } else if (e.target.closest('.delete-flight-btn')) {
-                    toggleDeleteConfirm(flightItem, true);
+                    if (isOwnerLoggedIn) {
+                        toggleDeleteConfirm(flightItem, true);
+                    } else {
+                        showNotification('Owner login required to delete flights.', 'error');
+                    }
                 } else if (e.target.closest('.confirm-delete-btn')) {
                     savedFlights.splice(flightIndex, 1);
                     saveFlightsToStorage();
@@ -628,7 +1058,7 @@
                 } else if (e.target.closest('.cancel-delete-btn')) {
                     toggleDeleteConfirm(flightItem, false);
                 } else if (e.target.closest('.flight-item-header')) {
-                    displayFlight(savedFlights[flightIndex].data);
+                    displayFlight(savedFlights[flightIndex].data, true);
                     document.querySelectorAll('.flight-item').forEach(el => el.classList.remove('selected'));
                     flightItem.classList.add('selected');
                 }

@@ -1,5 +1,14 @@
-
-/* HOW TO RUN:
+/**
+ * An all-in-one Node.js server that:
+ * 1. Receives POST requests from an Arduino/SIM800L on the '/data' endpoint.
+ * 2. Overwrites the device's timestamp with the server's current time.
+ * 3. Saves the data to a MySQL database.
+ * 4. Serves an HTML page at '/' that displays all the data from the MySQL database.
+ * 5. Serves the required CSS file at '/style.css'.
+ * 6. Handles DELETE requests to remove a single data point.
+ * 7. Handles a DELETE request to remove ALL data points from the database.
+ *
+ * HOW TO RUN:
  * 1. Install required packages: npm install mysql2
  * 2. Ensure you have `index.html` and `style.css` files in the same directory.
  * 3. UPDATE THE `dbConfig` OBJECT BELOW with your MySQL server details.
@@ -19,10 +28,11 @@ const dbConfig = {
     password: 'bestfriends1.',
     database: 'esp32_data'
 };
-const TABLE_NAME = 'drone_data';
+const TABLE_NAME = 'drone_data'; // <-- IMPORTANT: Change this to your table name
 const PORT = 25565;
 // --- END CONFIGURATION ---
 
+// Create the HTTP server.
 const server = http.createServer((req, res) => {
     if (req.url === '/' && req.method === 'GET') {
         serveHtml(res);
@@ -35,6 +45,9 @@ const server = http.createServer((req, res) => {
     }
     else if (req.url === '/data' && req.method === 'POST') {
         receiveArduinoData(req, res);
+    }
+    else if (req.url === '/api/data/all' && req.method === 'DELETE') {
+        deleteAllData(res);
     }
     else if (req.url.match(/\/api\/data\/(\d+)/) && req.method === 'DELETE') {
         const id = parseInt(req.url.split('/')[3]);
@@ -51,6 +64,9 @@ server.listen(PORT, () => {
     console.log(`Listening for Arduino POST requests on /data`);
 });
 
+/**
+ * Handles incoming POST requests from the Arduino.
+ */
 async function receiveArduinoData(req, res) {
     let body = '';
     req.on('data', chunk => { body += chunk.toString(); });
@@ -80,7 +96,7 @@ async function receiveArduinoData(req, res) {
             connection = await mysql.createConnection(dbConfig);
             await connection.execute(sql, values);
             console.log('Successfully inserted data into MySQL.');
-            res.writeHead(201, { 'Content-Type': 'application/json' }); // 201 Created
+            res.writeHead(201, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ message: 'Data received and saved successfully.'}));
         } catch (dbError) {
             console.error('Database Error:', dbError);
@@ -93,6 +109,9 @@ async function receiveArduinoData(req, res) {
     });
 }
 
+/**
+ * Serves all data from the database to the front-end webpage.
+ */
 async function serveDataApi(res) {
     let connection;
     try {
@@ -109,6 +128,9 @@ async function serveDataApi(res) {
     }
 }
 
+/**
+ * Deletes a single data point from the database by its ID.
+ */
 async function deleteDataPoint(res, id) {
     console.log(`Received DELETE request for id: ${id}`);
     if (isNaN(id)) {
@@ -139,6 +161,30 @@ async function deleteDataPoint(res, id) {
     }
 }
 
+/**
+ * Deletes ALL data from the database table.
+ */
+async function deleteAllData(res) {
+    console.log(`Received request to DELETE ALL DATA`);
+    let connection;
+    try {
+        connection = await mysql.createConnection(dbConfig);
+        const sql = `TRUNCATE TABLE ${TABLE_NAME}`;
+        await connection.execute(sql);
+        console.log(`Successfully truncated table: ${TABLE_NAME}`);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ message: 'All data deleted successfully' }));
+    } catch (dbError) {
+        console.error('Database Error during TRUNCATE:', dbError);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Error deleting all data from the database' }));
+    } finally {
+        if (connection) await connection.end();
+    }
+}
+
+
+/** Serves the index.html file. */
 function serveHtml(res) {
     const htmlFilePath = path.join(__dirname, 'index.html');
     fs.readFile(htmlFilePath, 'utf8', (err, data) => {
@@ -153,6 +199,7 @@ function serveHtml(res) {
     });
 }
 
+/** Serves the style.css file. */
 function serveCss(res) {
     const cssFilePath = path.join(__dirname, 'style.css');
     fs.readFile(cssFilePath, 'utf8', (err, data) => {
