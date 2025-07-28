@@ -55,7 +55,7 @@ La ``Aerosense/Identity/`` se gaseste identitatea produsului, adica logo-ul si t
    - Panou Solar 5V 1W | YX-107X61
    - Modul Incarcare solara acumulator 3.7V | MPPT
    - Voltmetru (incarcatura acumulator)
-   - Intrerupator (opriria circuitului)
+   - Intrerupator (oprirea circuitului)
    - Ridicator de tensiune (3.7V -> 5V) 5A | XL6019
   
 ### Echipament utilizat:
@@ -64,7 +64,7 @@ La ``Aerosense/Identity/`` se gaseste identitatea produsului, adica logo-ul si t
 | `Ciocan de lipit (380C)` | `WCD` |
 | `Ciocan de lipid (280C)` | `Dedeman` | 
 | `Pistol Termic (380C)` | `WCD` |
-| `Cositor SWCU 1/17 227C (fara plumb)` | Dedeman |
+| `Cositor SWCU 1/17 227C (fara plumb)` | `Dedeman` |
 | `Sursa programabila 161,2W (5.2A)` | `WAPTEK` |
 | `Imprimanta 3D Ender 3 V3 KE` | `Creality` |
 | `+ Alte scule si unelte gasite` | `Acasa` |
