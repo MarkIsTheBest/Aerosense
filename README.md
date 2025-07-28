@@ -133,3 +133,7 @@ Conectarea la Baza de Date: Scriptul ``server.js`` folosește librăria ``mysql2
 ### Schematica completa a sistemului din KiCad:
 <img width="1008" height="756" alt="image" src="https://github.com/user-attachments/assets/cba38ad6-4d2b-4e26-9eb9-47fbb8100417" />
 
+### Webserver-ul dronei:
+<img width="1008" height="756" alt="image" src="https://github.com/user-attachments/assets/ce487f56-4fcd-414a-9d1b-c897a84200d6" />
+
+
