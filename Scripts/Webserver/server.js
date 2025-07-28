@@ -1,21 +1,3 @@
-/**
- * An all-in-one Node.js server that:
- * 1. Receives POST requests from an Arduino/SIM800L on the '/data' endpoint.
- * 2. Overwrites the device's timestamp with the server's current time.
- * 3. Saves the data to a MySQL database.
- * 4. Serves an HTML page at '/' that displays all the data from the MySQL database.
- * 5. Serves the required CSS file at '/style.css'.
- * 6. Handles DELETE requests to remove a single data point.
- * 7. Handles a DELETE request to remove ALL data points from the database.
- *
- * HOW TO RUN:
- * 1. Install required packages: npm install mysql2
- * 2. Ensure you have `index.html` and `style.css` files in the same directory.
- * 3. UPDATE THE `dbConfig` OBJECT BELOW with your MySQL server details.
- * 4. UPDATE THE `TABLE_NAME` constant with the name of your table.
- * 5. Run the server: node server.js
- */
-
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
@@ -28,11 +10,12 @@ const dbConfig = {
     password: 'bestfriends1.',
     database: 'esp32_data'
 };
-const TABLE_NAME = 'drone_data'; // <-- IMPORTANT: Change this to your table name
+const TABLE_NAME = 'drone_data';
 const PORT = 25565;
-// --- END CONFIGURATION ---
 
-// Create the HTTP server.
+const GEMINI_API_KEY = "USE-YOUR-OWN-API-KEY";
+const OWNER_PASSWORD = "bestfriends1.";
+
 const server = http.createServer((req, res) => {
     if (req.url === '/' && req.method === 'GET') {
         serveHtml(res);
@@ -64,9 +47,6 @@ server.listen(PORT, () => {
     console.log(`Listening for Arduino POST requests on /data`);
 });
 
-/**
- * Handles incoming POST requests from the Arduino.
- */
 async function receiveArduinoData(req, res) {
     let body = '';
     req.on('data', chunk => { body += chunk.toString(); });
@@ -75,7 +55,7 @@ async function receiveArduinoData(req, res) {
         console.log('Received POST request from Arduino on /data');
         console.log('Request Body:', body);
         let data;
-        try { data = JSON.parse(body); } 
+        try { data = JSON.parse(body); }
         catch (error) {
             console.error('Error parsing JSON from Arduino:', error);
             res.writeHead(400, { 'Content-Type': 'text/plain' });
@@ -128,9 +108,6 @@ async function serveDataApi(res) {
     }
 }
 
-/**
- * Deletes a single data point from the database by its ID.
- */
 async function deleteDataPoint(res, id) {
     console.log(`Received DELETE request for id: ${id}`);
     if (isNaN(id)) {
@@ -161,9 +138,6 @@ async function deleteDataPoint(res, id) {
     }
 }
 
-/**
- * Deletes ALL data from the database table.
- */
 async function deleteAllData(res) {
     console.log(`Received request to DELETE ALL DATA`);
     let connection;
@@ -183,8 +157,6 @@ async function deleteAllData(res) {
     }
 }
 
-
-/** Serves the index.html file. */
 function serveHtml(res) {
     const htmlFilePath = path.join(__dirname, 'index.html');
     fs.readFile(htmlFilePath, 'utf8', (err, data) => {
@@ -194,12 +166,15 @@ function serveHtml(res) {
             res.end('Error loading HTML file.');
             return;
         }
+        
+        let processedHtml = data.replace('%%GEMINI_API_KEY%%', GEMINI_API_KEY);
+        processedHtml = processedHtml.replace('%%OWNER_PASSWORD%%', OWNER_PASSWORD);
+        
         res.writeHead(200, { 'Content-Type': 'text/html' });
-        res.end(data);
+        res.end(processedHtml);
     });
 }
 
-/** Serves the style.css file. */
 function serveCss(res) {
     const cssFilePath = path.join(__dirname, 'style.css');
     fs.readFile(cssFilePath, 'utf8', (err, data) => {
