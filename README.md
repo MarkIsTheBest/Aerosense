@@ -59,7 +59,7 @@ La ``Aerosense/Identity/`` se gaseste identitatea produsului, adica logo-ul si t
    - Ridicator de tensiune (3.7V -> 5V) 5A | XL6019
   
 ### Echipament utilizat:
-| Tools | Manufactorer |
+| Tools | Manufacturer |
 | --- | --- |
 | `Ciocan de lipit (380C)` | `WCD` |
 | `Ciocan de lipid (280C)` | `Dedeman` | 
