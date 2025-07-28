@@ -4,8 +4,7 @@
 #include "I2Cdev.h"
 #include "MPU6050.h"
 #include <Wire.h>
-#include <sSense-BMx280I2C.h>
-#include <BMx280_EnvCalc.h>
+#include <Adafruit_BME280.h>
 #include <Adafruit_SGP30.h>
 
 const char APN[] = "net";
@@ -27,7 +26,7 @@ QMC5883LCompass compass;
 TinyGPSPlus gps;
 SoftwareSerial gpsSerial(GPS_RX_PIN, GPS_TX_PIN);
 MPU6050 mpu;
-BMx280I2C bme;
+Adafruit_BME280 bme; // I2C
 Adafruit_SGP30 sgp;
 
 char compassDirection[4];
@@ -105,7 +104,9 @@ void readAllSensors() {
     accelY = (raw_ay / ACCEL_SCALE_FACTOR) * GRAVITY_MS2;
     accelZ = (raw_az / ACCEL_SCALE_FACTOR) * GRAVITY_MS2;
 
-    bme.read(pressure, temperature, humidity, BME280::TempUnit_Celsius, BME280::PresUnit_Pa);
+    temperature = bme.readTemperature();
+    humidity = bme.readHumidity();
+    pressure = bme.readPressure(); // This returns pressure in Pascals (Pa)
     if (humidity > 0) sgp.setHumidity(getAbsoluteHumidity(temperature, humidity));
     if (sgp.IAQmeasure()) {
         tvocLevel = sgp.TVOC;
@@ -133,7 +134,7 @@ void initializeSensors() {
         Serial.println(F("Failed."));
     }
     Serial.print(F("BME280... "));
-    if (!bme.begin()) Serial.println(F("Failed."));
+    if (!bme.begin(0x76)) Serial.println(F("Failed. Check wiring or I2C address!"));
     else Serial.println(F("Done."));
     Serial.print(F("SGP30... "));
     if (!sgp.begin()) Serial.println(F("Failed."));
@@ -275,8 +276,8 @@ void sendHttpPost() {
         Serial.println(F("Error setting HTTP data."));
     }
 
-    if (sendATCommand(F("AT+HTTPACTION=1"), F("+HTTPACTION: 1,200"), 20000)) {
-        Serial.println(F("Success: POST sent, server returned 200 OK."));
+    if (sendATCommand(F("AT+HTTPACTION=1"), F("+HTTPACTION: 1,201"), 20000)) {
+        Serial.println(F("Success: POST sent, server returned 201 OK."));
     } else {
         Serial.println(F("Error: HTTP POST failed."));
     }
