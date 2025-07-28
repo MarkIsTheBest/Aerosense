@@ -91,6 +91,22 @@ La ``Aerosense/Identity/`` se gaseste identitatea produsului, adica logo-ul si t
     * ``path`` (pentru a gestiona adresele fisierelor)
     * ``mysql2 + promise`` (pentru a efectua conexiunea cu baza de date mySQL)
     * ``leaflet(API)`` (pentru a avea acces la harta lumii)
+    * ``gemini(API)`` (pentru a explica datele complicate utilizatorilor "non-experti")
+
+### Baza de Date: MySQL
+
+Pentru a stoca în mod persistent datele primite de la dronă, sistemul utilizează o bază de date ``MySQL``. Serverul ``Node.js`` acționează ca o punte de legătură între microcontroler și baza de date.
+Conectarea la Baza de Date: Scriptul ``server.js`` folosește librăria ``mysql2/promise`` pentru a se conecta la serverul ``MySQL``. Detaliile de conectare (host, utilizator, parolă, numele bazei de date) sunt definite în obiectul ``dbConfig``.
+
+#### Primirea și Inserarea Datelor:
+1. Când microcontrolerul trimite date printr-o cerere ``POST`` la adresa ``/data``, serverul ``Node.js`` primește aceste informații în format ``JSON``.
+2. Serverul adaugă un timestamp exact la momentul recepției pentru a asigura acuratețea temporală.
+3. Datele sunt apoi inserate în tabelul ``drone_data`` din baza de date esp32_data folosind o interogare ``SQL`` de tip ``INSERT``. Utilizarea interogărilor parametrizate (cu ?) previne atacurile de tip ``SQL`` injection.
+   
+#### Livrarea Datelor către Front-End:
+1. Pagina web (``index.html``) solicită datele de la server prin intermediul unei cereri ``GET`` la adresa ``/api/data``.
+2. Serverul răspunde acestei cereri prin executarea unei interogări ``SQL`` de tip SELECT * FROM drone_data, extrăgând toate înregistrările.
+3. Datele extrase sunt trimise către front-end în format JSON, unde sunt apoi folosite pentru a popula graficele și harta ``Leaflet``.
 
 ### Software extern utilizat:
 | Software Name | Download Link |
@@ -100,6 +116,7 @@ La ``Aerosense/Identity/`` se gaseste identitatea produsului, adica logo-ul si t
 | `Fusion360` | [`https://www.autodesk.com/products/fusion-360/personal`](https://www.autodesk.com/products/fusion-360/personal) |
 | `Creality Print` | [`https://www.creality.com/pages/download-software`](https://www.creality.com/pages/download-software) |
 | `KiCad` | [`https://www.kicad.org/download/windows/`](https://www.kicad.org/download/windows/) |
+| `MySQL` | [`https://www.mysql.com`](https://www.mysql.com) |
 | `Gemini Pro AI` | [`https://gemini.google.com/`](https://gemini.google.com/) |
 | `Canva` | [`https://www.canva.com/`](https://www.canva.com/) |
 
