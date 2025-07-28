@@ -3,21 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drone Previous Flight Data</title>
+    <title>Aerosense Flight Data</title>
     
-    <!-- External Stylesheets -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 
-    <!-- External JavaScript Libraries -->
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-900 text-gray-200">
 
-    <!-- *** NEW: Notification Bar *** -->
     <div id="notification-bar" class="fixed top-0 left-1/2 -translate-x-1/2 p-3 rounded-b-lg shadow-lg text-white text-sm z-[4000] transition-transform duration-300 -translate-y-full">
         <span id="notification-message"></span>
     </div>
@@ -182,7 +179,7 @@
                                     <th data-sort-key="speed">SPEED (km/h)</th>
                                     <th data-sort-key="direction">DIRECTION</th>
                                     <th data-sort-key="sats">SATS</th>
-                                    <th class="owner-control">ACTIONS</th>
+                                    <th>ACTIONS</th>
                                 </tr>
                             </thead>
                             <tbody id="sensor-data-table-body"></tbody>
@@ -193,6 +190,20 @@
         </main>
     </div>
 
+    <!-- Gemini Explanation Modal -->
+    <div id="gemini-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[2000]">
+        <div class="bg-gray-800 p-6 rounded-lg shadow-xl w-11/12 max-w-2xl max-h-[80vh] flex flex-col">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-cyan-400">AI Data Explanation</h3>
+                <button id="close-gemini-modal-btn" class="text-gray-400 hover:text-white">&times;</button>
+            </div>
+            <div id="gemini-content" class="prose prose-invert prose-sm max-w-none overflow-y-auto">
+                <!-- Content will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Point Confirmation Modal -->
     <div id="delete-confirm-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[2000]">
         <div class="bg-gray-800 p-6 rounded-lg shadow-xl text-center w-11/12 max-w-md">
             <p class="text-lg mb-4">Are you sure you want to delete this data point?</p>
@@ -204,6 +215,7 @@
         </div>
     </div>
 
+    <!-- Delete ALL Confirmation Modal -->
     <div id="delete-all-confirm-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[2000]">
         <div class="bg-gray-800 p-6 rounded-lg shadow-xl text-center w-11/12 max-w-md">
             <h3 class="text-xl font-bold text-red-500 mb-2">DANGER ZONE</h3>
@@ -565,10 +577,14 @@
                 row.insertCell().textContent = reading.sats ?? 'N/A';
                 
                 const actionCell = row.insertCell();
-                actionCell.className = 'owner-control';
-                actionCell.innerHTML = `<button class="delete-row-btn p-1" data-id="${reading.id}" title="Delete this entry">
-                                            <i class="fas fa-trash-alt text-red-500 hover:text-red-400"></i>
-                                        </button>`;
+                actionCell.innerHTML = `
+                    <button class="explain-row-btn p-1" data-id="${reading.id}" title="Explain this data with AI">
+                        <i class="fas fa-brain text-cyan-400 hover:text-cyan-300"></i>
+                    </button>
+                    <button class="delete-row-btn owner-control p-1" data-id="${reading.id}" title="Delete this entry">
+                        <i class="fas fa-trash-alt text-red-500 hover:text-red-400"></i>
+                    </button>
+                `;
             });
         }
 
@@ -618,7 +634,7 @@
             const thresholds = {
                 tvoc:   { low: 250, high: 2200, weight: 0.3 },
                 eco2:   { low: 400, high: 2000, weight: 0.2 },
-                co:     { low: 4,   high: 9,    weight: 0.4 },
+                co:     { low: 4,   high: 2000,    weight: 0.1 },
                 gaslvl: { low: 0,   high: 1000, weight: 0.1 }
             };
             let totalScore = 0;
@@ -786,7 +802,6 @@
             currentTiles.addTo(map);
         }
         
-        // *** NEW: Notification function ***
         let notificationTimeout;
         function showNotification(message, type = 'info') {
             const notificationBar = document.getElementById('notification-bar');
@@ -812,7 +827,7 @@
         function handleLogin() {
             const passwordInput = document.getElementById('password-input');
             const loginError = document.getElementById('login-error');
-            if (passwordInput.value === 'bestfriends1.') {
+            if (passwordInput.value === '%%OWNER_PASSWORD%%') {
                 isOwnerLoggedIn = true;
                 sessionStorage.setItem('droneViewerOwner', 'true');
                 document.body.classList.add('logged-in');
@@ -847,6 +862,63 @@
             }
         }
 
+        // *** Gemini API Call Function ***
+        async function getGeminiExplanation(dataPoint) {
+            const modal = document.getElementById('gemini-modal');
+            const contentEl = document.getElementById('gemini-content');
+            modal.classList.remove('hidden');
+            contentEl.innerHTML = '<p class="text-center">Generating explanation...</p>';
+
+            const prompt = `
+                Explicața următoarele date de mediu obținute în urma unui zbor cu drona peste coordonatele înregistrate de GPS, în termeni simpli, pentru o persoană neavizată. 
+                Concentreaza-te pe semnificația fiecărei valori pentru calitatea aerului și mediul local.
+                Ora la care drona a înregistrat datele este ${dataPoint.Date}.
+                Includeți locația punctului de date în formatul ORAȘ - ȚARĂ.
+                Utilizați formatarea HTML numai pentru caractere aldine și cursive. (nu utilizați **BOLD** pentru caractere aldine, ci utilizați <b>BOLD</b>)
+
+                Data:
+                - TVOC (Total Volatile Organic Compounds): ${dataPoint.tvoc} ppb
+                - eCO2 (equivalent CO2): ${dataPoint.eco2} ppm
+                - CO (Carbon Monoxide): ${dataPoint.co} ppm
+                - Gas Level (general): ${dataPoint.gaslvl} ppm
+                - Temperature: ${dataPoint.temperature}°C
+                - Humidity: ${dataPoint.humidity}%
+                - Altitude: ${dataPoint.altitude} meters
+                - Location: Approximately at latitude ${Number(dataPoint.gps_lat).toFixed(4)}, longitude ${Number(dataPoint.gps_lng).toFixed(4)}
+
+                Furnizați un rezumat clar, scurt și concis în limba română.
+            `;
+
+            try {
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const payload = { contents: chatHistory };
+                // *** SECRET INJECTED BY SERVER ***
+                const apiKey = "%%GEMINI_API_KEY%%"; 
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const text = result.candidates[0].content.parts[0].text;
+                    contentEl.innerHTML = text.replace(/\n/g, '<br>'); // Simple formatting
+                } else {
+                    contentEl.textContent = 'Could not get an explanation from the AI.';
+                }
+            } catch (error) {
+                console.error('Gemini API error:', error);
+                contentEl.textContent = 'An error occurred while contacting the AI service.';
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             checkLoginState();
             
@@ -862,6 +934,9 @@
             document.getElementById('login-btn').addEventListener('click', handleLogin);
             document.getElementById('password-input').addEventListener('keypress', e => { if (e.key === 'Enter') handleLogin(); });
             document.getElementById('logout-btn').addEventListener('click', handleLogout);
+            document.getElementById('close-gemini-modal-btn').addEventListener('click', () => {
+                document.getElementById('gemini-modal').classList.add('hidden');
+            });
 
             document.getElementById('sidebarToggle').addEventListener('click', () => document.getElementById('sidebar').classList.toggle('open'));
             document.getElementById('search-button').addEventListener('click', handleSearch);
@@ -927,12 +1002,23 @@
                 if (!row) return;
 
                 const deleteButton = e.target.closest('.delete-row-btn');
+                const explainButton = e.target.closest('.explain-row-btn');
+
                 if (deleteButton) {
                     if (isOwnerLoggedIn) {
                         pointIdToDelete = parseInt(deleteButton.dataset.id);
                         deleteModal.classList.remove('hidden');
                     } else {
                         showNotification('Owner login required to delete data points.', 'error');
+                    }
+                    return;
+                }
+
+                if (explainButton) {
+                    const pointId = parseInt(explainButton.dataset.id);
+                    const dataPoint = currentlyDisplayedData.find(p => p.id === pointId);
+                    if (dataPoint) {
+                        getGeminiExplanation(dataPoint);
                     }
                     return;
                 }
