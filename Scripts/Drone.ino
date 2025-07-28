@@ -42,7 +42,7 @@ float temperature, humidity, pressure;
 uint16_t tvocLevel, co2Level;
 
 unsigned long lastSendTime = 0;
-const long sendInterval = 500;
+const long sendInterval = 5000;
 
 void setup() {
     Serial.begin(9600);
